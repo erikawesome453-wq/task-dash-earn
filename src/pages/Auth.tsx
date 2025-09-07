@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { Mail, Lock, User, Sparkles, Shield } from 'lucide-react';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -77,85 +78,148 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
-          </CardTitle>
-          <CardDescription>
-            {isLogin 
-              ? 'Sign in to access your dashboard' 
-              : 'Join our task earning platform'
-            }
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-20 -left-20 w-80 h-80 bg-primary/10 rounded-full blur-3xl float"></div>
+        <div className="absolute bottom-20 -right-20 w-96 h-96 bg-accent/10 rounded-full blur-3xl float" style={{animationDelay: '1.5s'}}></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-primary/5 rounded-full blur-3xl float" style={{animationDelay: '3s'}}></div>
+      </div>
+
+      <div className="relative z-10 w-full max-w-md">
+        <Card className="card-elegant hover-lift">
+          <CardHeader className="text-center space-y-4">
+            <div className="mx-auto w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center">
+              {isLogin ? (
+                <Shield className="h-8 w-8 text-primary-foreground" />
+              ) : (
+                <Sparkles className="h-8 w-8 text-primary-foreground" />
+              )}
+            </div>
+            <div>
+              <CardTitle className="text-3xl font-bold">
+                {isLogin ? (
+                  <>Welcome <span className="text-gradient-primary">Back</span></>
+                ) : (
+                  <>Join <span className="text-gradient-accent">EarnTask</span></>
+                )}
+              </CardTitle>
+              <CardDescription className="text-base mt-2">
+                {isLogin 
+                  ? 'Sign in to access your earning dashboard' 
+                  : 'Start your journey to daily earnings today'
+                }
+              </CardDescription>
+            </div>
+          </CardHeader>
+          
+          <CardContent className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {!isLogin && (
+                <div className="space-y-2">
+                  <Label htmlFor="username" className="flex items-center gap-2 text-sm font-medium">
+                    <User className="w-4 h-4" />
+                    Username
+                  </Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="Choose your username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required={!isLogin}
+                    className="h-12 px-4 bg-secondary/50 border-border/50 focus:border-primary focus:ring-primary"
+                  />
+                </div>
+              )}
+              
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium">
+                  <Mail className="w-4 h-4" />
+                  Email Address
+                </Label>
                 <Input
-                  id="username"
-                  type="text"
-                  placeholder="Enter your username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required={!isLogin}
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="h-12 px-4 bg-secondary/50 border-border/50 focus:border-primary focus:ring-primary"
                 />
               </div>
-            )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="password" className="flex items-center gap-2 text-sm font-medium">
+                  <Lock className="w-4 h-4" />
+                  Password
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="h-12 px-4 bg-secondary/50 border-border/50 focus:border-primary focus:ring-primary"
+                />
+              </div>
+              
+              <Button 
+                type="submit" 
+                className="w-full h-12 text-base font-semibold gradient-primary hover-glow"
+                disabled={loading}
+              >
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
+                    {isLogin ? 'Signing In...' : 'Creating Account...'}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    {isLogin ? 'Sign In' : 'Create Account'}
+                  </div>
+                )}
+              </Button>
+            </form>
             
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border/50"></div>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">or</span>
+              </div>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={loading}
-            >
-              {loading 
-                ? (isLogin ? 'Signing In...' : 'Creating Account...') 
-                : (isLogin ? 'Sign In' : 'Create Account')
-              }
-            </Button>
-          </form>
-          
-          <div className="mt-6 text-center">
             <Button
               variant="ghost"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-sm"
+              className="w-full text-sm hover-lift"
             >
               {isLogin 
-                ? "Don't have an account? Sign up" 
-                : "Already have an account? Sign in"
+                ? "Don't have an account? Create one now" 
+                : "Already have an account? Sign in instead"
               }
             </Button>
+          </CardContent>
+        </Card>
+        
+        {/* Trust indicators */}
+        <div className="mt-8 text-center space-y-4">
+          <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              SSL Secured
+            </div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              Instant Access
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };
