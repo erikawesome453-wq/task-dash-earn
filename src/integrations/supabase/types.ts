@@ -17,33 +17,90 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          email: string | null
           id: string
+          join_date: string
           last_task_date: string | null
+          payment_method: string | null
+          phone: string | null
+          referral_code: string | null
+          referral_earnings: number
+          referred_by_code: string | null
           role: Database["public"]["Enums"]["user_role"]
+          total_deposited: number
+          total_earned: number
+          total_referrals: number
           updated_at: string
           user_id: string
           username: string
+          vip_level: number
           wallet_balance: number
         }
         Insert: {
           created_at?: string
+          email?: string | null
           id?: string
+          join_date?: string
           last_task_date?: string | null
+          payment_method?: string | null
+          phone?: string | null
+          referral_code?: string | null
+          referral_earnings?: number
+          referred_by_code?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          total_deposited?: number
+          total_earned?: number
+          total_referrals?: number
           updated_at?: string
           user_id: string
           username: string
+          vip_level?: number
           wallet_balance?: number
         }
         Update: {
           created_at?: string
+          email?: string | null
           id?: string
+          join_date?: string
           last_task_date?: string | null
+          payment_method?: string | null
+          phone?: string | null
+          referral_code?: string | null
+          referral_earnings?: number
+          referred_by_code?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          total_deposited?: number
+          total_earned?: number
+          total_referrals?: number
           updated_at?: string
           user_id?: string
           username?: string
+          vip_level?: number
           wallet_balance?: number
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          bonus_earned: number
+          created_at: string
+          id: string
+          referred_id: string
+          referrer_id: string
+        }
+        Insert: {
+          bonus_earned?: number
+          created_at?: string
+          id?: string
+          referred_id: string
+          referrer_id: string
+        }
+        Update: {
+          bonus_earned?: number
+          created_at?: string
+          id?: string
+          referred_id?: string
+          referrer_id?: string
         }
         Relationships: []
       }
@@ -112,6 +169,45 @@ export type Database = {
           },
         ]
       }
+      wallet_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          payment_details: Json | null
+          payment_method: string | null
+          status: string
+          transaction_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          payment_details?: Json | null
+          payment_method?: string | null
+          status?: string
+          transaction_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          payment_details?: Json | null
+          payment_method?: string | null
+          status?: string
+          transaction_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       withdrawals: {
         Row: {
           amount: number
@@ -144,6 +240,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_vip_level: {
+        Args: { total_deposits: number; total_earnings: number }
+        Returns: number
+      }
+      generate_referral_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      get_daily_task_limit: {
+        Args: { vip_level: number }
+        Returns: number
+      }
       is_admin: {
         Args: { user_uuid: string }
         Returns: boolean
