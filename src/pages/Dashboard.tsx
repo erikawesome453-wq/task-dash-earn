@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Wallet, Calendar, ExternalLink, LogOut, TrendingUp, Award, Clock, Target, Zap } from 'lucide-react';
+import { Wallet, Calendar, ExternalLink, TrendingUp, Award, Clock, Target, Zap, Crown, Users, Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import Header from '@/components/Header';
 
 interface Task {
   id: string;
@@ -31,14 +32,27 @@ interface Withdrawal {
 }
 
 const Dashboard = () => {
-  const { user, profile, signOut, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { toast } = useToast();
   
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completedTasks, setCompletedTasks] = useState<CompletedTask[]>([]);
-  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loading, setLoading] = useState(true);
   const [tasksCompletedToday, setTasksCompletedToday] = useState(0);
+  
+  // Calculate daily task limit based on VIP level
+  const getDailyTaskLimit = (vipLevel: number) => {
+    switch (vipLevel) {
+      case 5: return 30;
+      case 4: return 25;
+      case 3: return 20;
+      case 2: return 15;
+      case 1: return 10;
+      default: return 5;
+    }
+  };
+  
+  const dailyTaskLimit = getDailyTaskLimit(profile?.vip_level || 0);
 
   if (!user) {
     return <Navigate to="/auth" replace />;
@@ -72,14 +86,7 @@ const Dashboard = () => {
         setTasksCompletedToday(completedData.length);
       }
 
-      // Fetch withdrawal requests
-      const { data: withdrawalData } = await supabase
-        .from('withdrawals')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      
-      if (withdrawalData) setWithdrawals(withdrawalData);
+      // Note: Withdrawals now handled in separate Wallet page
       
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -95,7 +102,7 @@ const Dashboard = () => {
   }, [user]);
 
   const handleTaskClick = async (task: Task) => {
-    if (tasksCompletedToday >= 5) {
+    if (tasksCompletedToday >= dailyTaskLimit) {
       toast({
         title: "Daily Limit Reached",
         description: "You've reached your daily task limit. Come back tomorrow!",
@@ -139,15 +146,27 @@ const Dashboard = () => {
 
       if (taskError) throw taskError;
 
-      // Update user's wallet balance
+      // Update user's wallet balance and total earned
       const newBalance = parseFloat(profile.wallet_balance) + parseFloat(task.reward_amount.toString());
+      const newTotalEarned = parseFloat(profile.total_earned || '0') + parseFloat(task.reward_amount.toString());
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ 
           wallet_balance: newBalance,
+          total_earned: newTotalEarned,
           last_task_date: today
         })
         .eq('user_id', user.id);
+        
+      // Log task reward transaction
+      await supabase
+        .from('wallet_transactions')
+        .insert({
+          user_id: user.id,
+          transaction_type: 'task_reward',
+          amount: task.reward_amount,
+          description: `Task completed: ${task.title}`
+        });
 
       if (profileError) throw profileError;
 
@@ -222,29 +241,25 @@ const Dashboard = () => {
     !completedTasks.some(ct => ct.task.id === task.id)
   );
 
-  const progressPercentage = (tasksCompletedToday / 5) * 100;
+  const progressPercentage = (tasksCompletedToday / dailyTaskLimit) * 100;
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background">
+      <Header tasksCompletedToday={tasksCompletedToday} dailyTaskLimit={dailyTaskLimit} />
+      
       {/* Floating background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-10 right-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl float"></div>
+        <div className="absolute top-20 right-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl float"></div>
         <div className="absolute bottom-20 left-10 w-80 h-80 bg-accent/5 rounded-full blur-3xl float" style={{animationDelay: '2s'}}></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="space-y-2">
-            <h1 className="text-4xl font-bold">
-              Welcome back, <span className="text-gradient-primary">{profile?.username}</span>!
-            </h1>
-            <p className="text-lg text-muted-foreground">Ready to earn some money today?</p>
-          </div>
-          <Button onClick={signOut} variant="outline" className="hover-lift">
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
-          </Button>
+      <div className="relative z-10 container mx-auto px-4 py-8 max-w-7xl space-y-8">
+        {/* Welcome Section */}
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl font-bold">
+            Welcome back, <span className="text-gradient-primary">{profile?.username}</span>!
+          </h1>
+          <p className="text-lg text-muted-foreground">Ready to earn some money today?</p>
         </div>
 
         {/* Progress Bar */}
@@ -254,18 +269,18 @@ const Dashboard = () => {
               <Target className="h-6 w-6 text-primary" />
               <h3 className="text-xl font-semibold">Daily Progress</h3>
             </div>
-            <Badge variant={tasksCompletedToday >= 5 ? "default" : "secondary"} className="text-sm">
-              {tasksCompletedToday}/5 Tasks
+            <Badge variant={tasksCompletedToday >= dailyTaskLimit ? "default" : "secondary"} className="text-sm">
+              {tasksCompletedToday}/{dailyTaskLimit} Tasks
             </Badge>
           </div>
           <Progress value={progressPercentage} className="h-3" />
           <p className="text-sm text-muted-foreground mt-2">
-            {5 - tasksCompletedToday} tasks remaining today
+            {dailyTaskLimit - tasksCompletedToday} tasks remaining today
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card className="card-elegant hover-lift group">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <CardTitle className="text-lg font-medium">Wallet Balance</CardTitle>
@@ -296,22 +311,36 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="card-elegant hover-lift">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-medium">Quick Action</CardTitle>
+          <Card className="card-elegant hover-lift group">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <CardTitle className="text-lg font-medium">VIP Level</CardTitle>
+              <div className="w-12 h-12 gradient-accent rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Crown className="h-6 w-6 text-primary-foreground" />
+              </div>
             </CardHeader>
             <CardContent>
-              <Button 
-                onClick={handleWithdrawal}
-                disabled={parseFloat(profile?.wallet_balance || '0') < 5}
-                className="w-full gradient-primary hover-glow"
-                size="lg"
-              >
-                <Award className="mr-2 h-4 w-4" />
-                Request Withdrawal
-              </Button>
-              <p className="text-xs text-muted-foreground mt-2 text-center">
-                Minimum $5.00 required
+              <div className="text-3xl font-bold text-gradient-accent">
+                {profile?.vip_level === 0 ? 'Standard' : `VIP ${profile?.vip_level}`}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                {dailyTaskLimit} tasks per day
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="card-elegant hover-lift group">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <CardTitle className="text-lg font-medium">Referrals</CardTitle>
+              <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Users className="h-6 w-6 text-primary-foreground" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-gradient-primary">
+                {profile?.total_referrals || 0}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                ${parseFloat(profile?.referral_earnings || '0').toFixed(2)} earned
               </p>
             </CardContent>
           </Card>
@@ -330,7 +359,7 @@ const Dashboard = () => {
                   </CardDescription>
                 </div>
               </div>
-              {tasksCompletedToday < 5 && (
+              {tasksCompletedToday < dailyTaskLimit && (
                 <Badge className="gradient-primary text-primary-foreground">
                   {availableTasks.length} Available
                 </Badge>
@@ -338,7 +367,7 @@ const Dashboard = () => {
             </div>
           </CardHeader>
           <CardContent>
-            {tasksCompletedToday >= 5 ? (
+            {tasksCompletedToday >= dailyTaskLimit ? (
               <div className="text-center py-12 space-y-4">
                 <Clock className="h-16 w-16 text-muted-foreground mx-auto" />
                 <div>
@@ -410,40 +439,6 @@ const Dashboard = () => {
           </Card>
         )}
 
-        {/* Withdrawal History */}
-        {withdrawals.length > 0 && (
-          <Card className="card-elegant">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3">
-                <TrendingUp className="h-6 w-6 text-primary" />
-                Withdrawal History
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {withdrawals.map((withdrawal) => (
-                  <div key={withdrawal.id} className="flex justify-between items-center p-4 border border-border/50 rounded-xl hover-lift">
-                    <div>
-                      <span className="font-semibold text-lg">${withdrawal.amount.toFixed(2)}</span>
-                      <p className="text-sm text-muted-foreground">
-                        Requested on {new Date(withdrawal.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <Badge 
-                      variant={
-                        withdrawal.status === 'approved' ? 'default' : 
-                        withdrawal.status === 'rejected' ? 'destructive' : 'secondary'
-                      }
-                      className="capitalize"
-                    >
-                      {withdrawal.status}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );
