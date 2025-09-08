@@ -29,11 +29,11 @@ const Header: React.FC<HeaderProps> = ({ tasksCompletedToday = 0, dailyTaskLimit
   const getVipLabel = (level: number) => {
     switch (level) {
       case 0: return 'Standard';
-      case 1: return 'VIP 1';
-      case 2: return 'VIP 2';
-      case 3: return 'VIP 3';
-      case 4: return 'VIP 4';
-      case 5: return 'VIP 5';
+      case 1: return 'Level 1';
+      case 2: return 'VIP';
+      case 3: return 'VVIP';
+      case 4: return 'Super VIP';
+      case 5: return 'Super VVIP';
       default: return 'Standard';
     }
   };

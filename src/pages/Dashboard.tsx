@@ -134,26 +134,43 @@ const Dashboard = () => {
       // Open task URL in new tab
       window.open(task.url, '_blank');
 
+      // Generate dynamic reward based on user's VIP level
+      const { data: rewardData, error: rewardError } = await supabase
+        .rpc('generate_task_reward', { user_vip_level: (profile?.vip_level || 0).toString() });
+
+      if (rewardError) throw rewardError;
+
+      const dynamicReward = rewardData || task.reward_amount;
+
       // Mark task as completed and add reward
       const { error: taskError } = await supabase
         .from('user_tasks')
         .insert({
           user_id: user.id,
           task_id: task.id,
-          reward_earned: task.reward_amount,
+          reward_earned: dynamicReward,
           task_date: today
         });
 
       if (taskError) throw taskError;
 
       // Update user's wallet balance and total earned
-      const newBalance = parseFloat(profile.wallet_balance) + parseFloat(task.reward_amount.toString());
-      const newTotalEarned = parseFloat(profile.total_earned || '0') + parseFloat(task.reward_amount.toString());
+      const newBalance = parseFloat(profile.wallet_balance) + dynamicReward;
+      const newTotalEarned = parseFloat(profile.total_earned || '0') + dynamicReward;
+      
+      // Calculate new VIP level
+      const { data: newVipLevel } = await supabase
+        .rpc('calculate_vip_level', { 
+          total_deposits: parseFloat(profile.total_deposited || '0'),
+          total_earnings: newTotalEarned
+        });
+
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ 
           wallet_balance: newBalance,
           total_earned: newTotalEarned,
+          vip_level: newVipLevel || profile.vip_level,
           last_task_date: today
         })
         .eq('user_id', user.id);
@@ -164,7 +181,7 @@ const Dashboard = () => {
         .insert({
           user_id: user.id,
           transaction_type: 'task_reward',
-          amount: task.reward_amount,
+          amount: dynamicReward,
           description: `Task completed: ${task.title}`
         });
 
@@ -172,7 +189,7 @@ const Dashboard = () => {
 
       toast({
         title: "Task Completed!",
-        description: `You earned $${task.reward_amount.toFixed(2)}! Check your wallet.`
+        description: `You earned $${dynamicReward.toFixed(2)}! Check your wallet.`
       });
 
       // Refresh data
@@ -320,7 +337,12 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-gradient-accent">
-                {profile?.vip_level === 0 ? 'Standard' : `VIP ${profile?.vip_level}`}
+                {profile?.vip_level === 0 ? 'Standard' : 
+                 profile?.vip_level === 1 ? 'Level 1' :
+                 profile?.vip_level === 2 ? 'VIP' :
+                 profile?.vip_level === 3 ? 'VVIP' :
+                 profile?.vip_level === 4 ? 'Super VIP' :
+                 profile?.vip_level === 5 ? 'Super VVIP' : 'Standard'}
               </div>
               <p className="text-sm text-muted-foreground mt-1">
                 {dailyTaskLimit} tasks per day

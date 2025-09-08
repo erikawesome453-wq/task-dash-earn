@@ -248,6 +248,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      generate_task_reward: {
+        Args: { user_vip_level: number }
+        Returns: number
+      }
       get_daily_task_limit: {
         Args: { vip_level: number }
         Returns: number

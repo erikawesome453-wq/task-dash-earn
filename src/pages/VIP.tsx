@@ -34,74 +34,75 @@ const VIPPage = () => {
       color: 'bg-muted text-muted-foreground',
       borderColor: 'border-muted',
       requirement: 0,
-      nextRequirement: 20,
+      nextRequirement: 40.5,
       benefits: [
         '5 tasks per day',
         'Basic support',
-        'Standard rewards'
+        'Task rewards: $0.10 - $1.20',
+        'Standard earning opportunities'
       ]
     },
     {
       level: 1,
-      name: 'VIP 1',
+      name: 'Level 1',
       icon: <Star className="h-5 w-5" />,
       color: 'bg-blue-500/10 text-blue-500',
       borderColor: 'border-blue-500/20',
-      requirement: 20,
-      nextRequirement: 50,
+      requirement: 40.5,
+      nextRequirement: 100.05,
       benefits: [
         '10 tasks per day',
         'Priority support',
-        '5% bonus rewards',
-        'Exclusive tasks access'
+        'Task rewards: $0.10 - $1.20',
+        'Enhanced earning potential'
       ]
     },
     {
       level: 2,
-      name: 'VIP 2',
+      name: 'VIP',
       icon: <Gift className="h-5 w-5" />,
       color: 'bg-green-500/10 text-green-500',
       borderColor: 'border-green-500/20',
-      requirement: 50,
-      nextRequirement: 100,
+      requirement: 100.05,
+      nextRequirement: 200.5,
       benefits: [
         '15 tasks per day',
         'VIP support channel',
-        '10% bonus rewards',
-        'Weekly bonus tasks',
+        'Task rewards: $1.00 - $2.20',
+        'Higher earning rates',
         'Faster withdrawals'
       ]
     },
     {
       level: 3,
-      name: 'VIP 3',
+      name: 'VVIP',
       icon: <Zap className="h-5 w-5" />,
       color: 'bg-purple-500/10 text-purple-500',
       borderColor: 'border-purple-500/20',
-      requirement: 100,
-      nextRequirement: 200,
+      requirement: 200.5,
+      nextRequirement: 500.5,
       benefits: [
         '20 tasks per day',
-        'Dedicated VIP support',
-        '15% bonus rewards',
-        'Premium task categories',
+        'Dedicated VVIP support',
+        'Task rewards: $4.00 - $20.00',
+        'Premium earning opportunities',
         'Monthly bonus rewards',
         'Lower withdrawal fees'
       ]
     },
     {
       level: 4,
-      name: 'VIP 4',
+      name: 'Super VIP',
       icon: <TrendingUp className="h-5 w-5" />,
       color: 'bg-orange-500/10 text-orange-500',
       borderColor: 'border-orange-500/20',
-      requirement: 200,
-      nextRequirement: 500,
+      requirement: 500.5,
+      nextRequirement: 3000,
       benefits: [
         '25 tasks per day',
         'Premium support',
-        '20% bonus rewards',
-        'Exclusive VIP tasks',
+        'Task rewards: $10.00 - $40.00',
+        'Exclusive high-value tasks',
         'Early access to new features',
         'Free withdrawals',
         'Special VIP events'
@@ -109,16 +110,17 @@ const VIPPage = () => {
     },
     {
       level: 5,
-      name: 'VIP 5',
+      name: 'Super VVIP',
       icon: <Crown className="h-5 w-5" />,
       color: 'gradient-primary text-primary-foreground',
       borderColor: 'border-primary',
-      requirement: 500,
+      requirement: 3000,
       nextRequirement: null,
       benefits: [
         '30 tasks per day',
         'White-glove support',
-        '25% bonus rewards',
+        'Task rewards: $50.00 - $300.00',
+        'Maximum earning potential',
         'Unlimited premium tasks',
         'Beta feature access',
         'Instant withdrawals',
