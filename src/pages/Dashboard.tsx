@@ -15,6 +15,10 @@ interface Task {
   title: string;
   url: string;
   reward_amount: number;
+  image_url?: string;
+  description?: string;
+  category?: string;
+  platform?: string;
 }
 
 interface CompletedTask {
@@ -406,23 +410,57 @@ const Dashboard = () => {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {availableTasks.map((task) => (
-                  <Card key={task.id} className="hover-lift cursor-pointer group border-border/50 hover:border-primary/50 transition-colors">
-                    <CardContent className="p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">{task.title}</h3>
-                        <Badge className="gradient-primary text-primary-foreground font-semibold">
+                  <Card key={task.id} className="hover-lift cursor-pointer group border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden">
+                    {/* Product Image */}
+                    <div className="relative h-48 overflow-hidden">
+                      <img 
+                        src={task.image_url || 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop'}
+                        alt={task.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
+                      <div className="absolute top-4 right-4">
+                        <Badge className="gradient-primary text-primary-foreground font-semibold shadow-lg">
                           +${task.reward_amount.toFixed(2)}
                         </Badge>
                       </div>
+                      <div className="absolute top-4 left-4">
+                        <Badge variant="secondary" className="bg-white/90 text-gray-800 shadow-sm">
+                          {task.category || 'General'}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <CardContent className="p-6">
+                      {/* Platform Badge */}
+                      <div className="flex items-center justify-between mb-3">
+                        <Badge variant="outline" className="text-xs font-medium">
+                          {task.platform || 'Website'}
+                        </Badge>
+                        <div className="text-xs text-muted-foreground">
+                          Earn instantly
+                        </div>
+                      </div>
+
+                      {/* Title and Description */}
+                      <div className="mb-4">
+                        <h3 className="font-semibold text-lg group-hover:text-primary transition-colors mb-2 line-clamp-1">
+                          {task.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                          {task.description || 'Complete this task to earn instant rewards'}
+                        </p>
+                      </div>
+
+                      {/* Action Button */}
                       <Button 
                         onClick={() => handleTaskClick(task)}
-                        className="w-full gradient-primary hover-glow group-hover:scale-105 transition-transform"
+                        className="w-full gradient-primary hover-glow group-hover:scale-105 transition-all duration-200"
                         size="lg"
                       >
                         <ExternalLink className="mr-2 h-5 w-5" />
-                        Complete Task & Earn
+                        Complete & Earn
                       </Button>
                     </CardContent>
                   </Card>

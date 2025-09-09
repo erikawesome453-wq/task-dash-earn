@@ -106,27 +106,39 @@ export type Database = {
       }
       tasks: {
         Row: {
+          category: string | null
           created_at: string
+          description: string | null
           id: string
+          image_url: string | null
           is_active: boolean
+          platform: string | null
           reward_amount: number
           title: string
           updated_at: string
           url: string
         }
         Insert: {
+          category?: string | null
           created_at?: string
+          description?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
+          platform?: string | null
           reward_amount?: number
           title: string
           updated_at?: string
           url: string
         }
         Update: {
+          category?: string | null
           created_at?: string
+          description?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
+          platform?: string | null
           reward_amount?: number
           title?: string
           updated_at?: string
