@@ -261,6 +261,26 @@ All colors MUST be HSL.
   }
 
   .animate-bounce {
-    animation: task-bounce 3s ease-in-out infinite;
+    animation: task-bounce 25s ease-in-out infinite;
+  }
+
+  /* Loading progress animation */
+  @keyframes progress-fill {
+    0% { width: 0%; }
+    100% { width: 100%; }
+  }
+
+  /* Rotating world animation */
+  @keyframes world-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .animate-progress {
+    animation: progress-fill 3s ease-out forwards;
+  }
+
+  .animate-world-rotate {
+    animation: world-rotate 2s linear infinite;
   }
 }

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Wallet, Calendar, ExternalLink, TrendingUp, Award, Clock, Target, Zap, Crown, Users, Plus } from 'lucide-react';
+import { Wallet, Calendar, ExternalLink, TrendingUp, Award, Clock, Target, Zap, Crown, Users, Plus, Globe } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -43,6 +43,7 @@ const Dashboard = () => {
   const [completedTasks, setCompletedTasks] = useState<CompletedTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [tasksCompletedToday, setTasksCompletedToday] = useState(0);
+  const [loadingTask, setLoadingTask] = useState<string | null>(null);
   
   // Calculate daily task limit based on VIP level
   const getDailyTaskLimit = (vipLevel: number) => {
@@ -135,8 +136,11 @@ const Dashboard = () => {
         return;
       }
 
-      // Open task URL in new tab
-      window.open(task.url, '_blank');
+      // Start loading animation
+      setLoadingTask(task.id);
+
+      // Wait for 3 seconds to simulate task completion
+      await new Promise(resolve => setTimeout(resolve, 3000));
 
       // Generate dynamic reward based on user's VIP level
       const { data: rewardData, error: rewardError } = await supabase
@@ -206,6 +210,8 @@ const Dashboard = () => {
         description: error.message || "Failed to complete task",
         variant: "destructive"
       });
+    } finally {
+      setLoadingTask(null);
     }
   };
 
@@ -454,14 +460,26 @@ const Dashboard = () => {
                       </div>
 
                       {/* Action Button */}
-                      <Button 
-                        onClick={() => handleTaskClick(task)}
-                        className="w-full gradient-primary hover-glow group-hover:scale-105 transition-all duration-200"
-                        size="lg"
-                      >
-                        <ExternalLink className="mr-2 h-5 w-5" />
-                        Complete & Earn
-                      </Button>
+                      {loadingTask === task.id ? (
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-center space-x-2 text-primary">
+                            <Globe className="h-5 w-5 animate-world-rotate" />
+                            <span className="text-sm font-medium">Processing task...</span>
+                          </div>
+                          <div className="w-full bg-secondary h-3 rounded-full overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-primary to-primary/70 animate-progress"></div>
+                          </div>
+                        </div>
+                      ) : (
+                        <Button 
+                          onClick={() => handleTaskClick(task)}
+                          className="w-full gradient-primary hover-glow group-hover:scale-105 transition-all duration-200"
+                          size="lg"
+                        >
+                          <ExternalLink className="mr-2 h-5 w-5" />
+                          Complete & Earn
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
