@@ -44,6 +44,14 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [tasksCompletedToday, setTasksCompletedToday] = useState(0);
   const [loadingTask, setLoadingTask] = useState<string | null>(null);
+  const [currentCompany, setCurrentCompany] = useState('');
+
+  const topCompanies = [
+    'Amazon', 'Google', 'Microsoft', 'Apple', 'Meta', 'Netflix', 'Tesla', 'Nike', 'Samsung', 'Walmart',
+    'JPMorgan', 'Visa', 'Mastercard', 'PayPal', 'Stripe', 'Square', 'Adobe', 'Salesforce', 'Oracle', 'IBM',
+    'Coca-Cola', 'Pepsi', 'McDonald\'s', 'Starbucks', 'Disney', 'Sony', 'Nintendo', 'Spotify', 'Uber', 'Airbnb',
+    'Twitter', 'LinkedIn', 'TikTok', 'Instagram', 'YouTube', 'Snapchat', 'Pinterest', 'Reddit', 'Zoom', 'Slack'
+  ];
   
   // Calculate daily task limit based on VIP level
   const getDailyTaskLimit = (vipLevel: number) => {
@@ -138,9 +146,18 @@ const Dashboard = () => {
 
       // Start loading animation
       setLoadingTask(task.id);
+      
+      // Start company name cycling
+      const companyInterval = setInterval(() => {
+        const randomCompany = topCompanies[Math.floor(Math.random() * topCompanies.length)];
+        setCurrentCompany(randomCompany);
+      }, 150); // Change every 150ms for fast cycling
 
       // Wait for 3 seconds to simulate task completion
       await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Clear the interval
+      clearInterval(companyInterval);
 
       // Generate dynamic reward based on user's VIP level
       const { data: rewardData, error: rewardError } = await supabase
@@ -212,6 +229,7 @@ const Dashboard = () => {
       });
     } finally {
       setLoadingTask(null);
+      setCurrentCompany('');
     }
   };
 
@@ -462,9 +480,14 @@ const Dashboard = () => {
                       {/* Action Button */}
                       {loadingTask === task.id ? (
                         <div className="space-y-3">
-                          <div className="flex items-center justify-center space-x-2 text-primary">
-                            <Globe className="h-5 w-5 animate-world-rotate" />
-                            <span className="text-sm font-medium">Processing task...</span>
+                          <div className="text-center space-y-2">
+                            <div className="flex items-center justify-center space-x-2 text-primary">
+                              <Globe className="h-5 w-5 animate-world-rotate" />
+                              <span className="text-sm font-medium">Finding best buyer with automatic search...</span>
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Scanning: <span className="font-semibold text-primary">{currentCompany}</span>
+                            </div>
                           </div>
                           <div className="w-full bg-secondary h-3 rounded-full overflow-hidden">
                             <div className="h-full bg-gradient-to-r from-primary to-primary/70 animate-progress"></div>
