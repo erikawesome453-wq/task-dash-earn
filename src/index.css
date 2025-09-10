@@ -250,17 +250,17 @@ All colors MUST be HSL.
     -webkit-line-clamp: 3;
   }
 
-  /* Enhanced bounce animation for images */
+  /* Enhanced bounce animation for images - slower motion */
   @keyframes task-bounce {
     0%, 100% {
-      transform: translateY(0) scale(1);
+      transform: translateY(0);
     }
     50% {
-      transform: translateY(-8px) scale(1.02);
+      transform: translateY(-6px);
     }
   }
 
   .animate-bounce {
-    animation: task-bounce 2s ease-in-out infinite;
+    animation: task-bounce 3s ease-in-out infinite;
   }
 }
