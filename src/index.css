@@ -249,4 +249,18 @@ All colors MUST be HSL.
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
   }
+
+  /* Enhanced bounce animation for images */
+  @keyframes task-bounce {
+    0%, 100% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-8px) scale(1.02);
+    }
+  }
+
+  .animate-bounce {
+    animation: task-bounce 2s ease-in-out infinite;
+  }
 }

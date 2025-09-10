@@ -414,11 +414,11 @@ const Dashboard = () => {
                 {availableTasks.map((task) => (
                   <Card key={task.id} className="hover-lift cursor-pointer group border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden">
                     {/* Product Image */}
-                    <div className="relative h-48 overflow-hidden">
+                    <div className="relative h-40 overflow-hidden">
                       <img 
                         src={task.image_url || 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop'}
                         alt={task.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        className="w-32 h-32 object-cover mx-auto mt-4 rounded-lg animate-bounce group-hover:scale-110 transition-all duration-300 shadow-lg"
                       />
                       <div className="absolute top-4 right-4">
                         <Badge className="gradient-primary text-primary-foreground font-semibold shadow-lg">
