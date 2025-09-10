@@ -133,7 +133,7 @@ const Dashboard = () => {
         .eq('user_id', user.id)
         .eq('task_id', task.id)
         .eq('task_date', today)
-        .single();
+        .maybeSingle();
 
       if (existingTask) {
         toast({
@@ -161,7 +161,7 @@ const Dashboard = () => {
 
       // Generate dynamic reward based on user's VIP level
       const { data: rewardData, error: rewardError } = await supabase
-        .rpc('generate_task_reward', { user_vip_level: (profile?.vip_level || 0).toString() });
+        .rpc('generate_task_reward', { user_vip_level: (profile?.vip_level || 0) });
 
       if (rewardError) throw rewardError;
 
@@ -179,14 +179,18 @@ const Dashboard = () => {
 
       if (taskError) throw taskError;
 
-      // Update user's wallet balance and total earned
-      const newBalance = parseFloat(profile.wallet_balance) + dynamicReward;
-      const newTotalEarned = parseFloat(profile.total_earned || '0') + dynamicReward;
+      // Update user's wallet balance and total earned (safe when profile is null)
+      const currentBalance = parseFloat(String(profile?.wallet_balance ?? '0'));
+      const currentTotalEarned = parseFloat(String(profile?.total_earned ?? '0'));
+      const currentTotalDeposited = parseFloat(String(profile?.total_deposited ?? '0'));
+
+      const newBalance = currentBalance + dynamicReward;
+      const newTotalEarned = currentTotalEarned + dynamicReward;
       
       // Calculate new VIP level
       const { data: newVipLevel } = await supabase
         .rpc('calculate_vip_level', { 
-          total_deposits: parseFloat(profile.total_deposited || '0'),
+          total_deposits: currentTotalDeposited,
           total_earnings: newTotalEarned
         });
 
@@ -195,7 +199,7 @@ const Dashboard = () => {
         .update({ 
           wallet_balance: newBalance,
           total_earned: newTotalEarned,
-          vip_level: newVipLevel || profile.vip_level,
+          vip_level: newVipLevel || profile?.vip_level || 0,
           last_task_date: today
         })
         .eq('user_id', user.id);
