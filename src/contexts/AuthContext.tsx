@@ -40,6 +40,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     if (!error && data) {
       setProfile(data);
+    } else if (!data && !error) {
+      // Profile doesn't exist, create it
+      const { data: newProfile } = await supabase
+        .from('profiles')
+        .insert({
+          user_id: user.id,
+          username: user.email?.split('@')[0] || 'user',
+          email: user.email
+        })
+        .select()
+        .single();
+      
+      if (newProfile) {
+        setProfile(newProfile);
+      }
     }
   };
 

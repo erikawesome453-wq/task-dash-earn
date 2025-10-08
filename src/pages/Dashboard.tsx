@@ -179,42 +179,8 @@ const Dashboard = () => {
 
       if (taskError) throw taskError;
 
-      // Update user's wallet balance and total earned (safe when profile is null)
-      const currentBalance = parseFloat(String(profile?.wallet_balance ?? '0'));
-      const currentTotalEarned = parseFloat(String(profile?.total_earned ?? '0'));
-      const currentTotalDeposited = parseFloat(String(profile?.total_deposited ?? '0'));
-
-      const newBalance = currentBalance + dynamicReward;
-      const newTotalEarned = currentTotalEarned + dynamicReward;
-      
-      // Calculate new VIP level
-      const { data: newVipLevel } = await supabase
-        .rpc('calculate_vip_level', { 
-          total_deposits: currentTotalDeposited,
-          total_earnings: newTotalEarned
-        });
-
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ 
-          wallet_balance: newBalance,
-          total_earned: newTotalEarned,
-          vip_level: newVipLevel || profile?.vip_level || 0,
-          last_task_date: today
-        })
-        .eq('user_id', user.id);
-        
-      // Log task reward transaction
-      await supabase
-        .from('wallet_transactions')
-        .insert({
-          user_id: user.id,
-          transaction_type: 'task_reward',
-          amount: dynamicReward,
-          description: `Task completed: ${task.title}`
-        });
-
-      if (profileError) throw profileError;
+      // Note: Wallet update now handled by database trigger automatically
+      // The trigger updates wallet_balance, total_earned, and logs transaction
 
       toast({
         title: "Task Completed!",
