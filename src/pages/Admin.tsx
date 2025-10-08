@@ -50,8 +50,12 @@ const Admin = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskDialog, setShowTaskDialog] = useState(false);
 
-  if (!user || profile?.role !== 'admin') {
+  if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  if (profile?.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
   }
 
   const fetchData = async () => {
