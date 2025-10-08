@@ -256,6 +256,10 @@ export type Database = {
         Args: { total_deposits: number; total_earnings: number }
         Returns: number
       }
+      ensure_admin_role: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       generate_referral_code: {
         Args: Record<PropertyKey, never>
         Returns: string
