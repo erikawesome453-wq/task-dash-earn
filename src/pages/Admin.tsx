@@ -50,7 +50,7 @@ interface Deposit {
 }
 
 const Admin = () => {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, loading: authLoading } = useAuth();
   const { toast } = useToast();
   
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -62,6 +62,14 @@ const Admin = () => {
   const [taskForm, setTaskForm] = useState({ title: '', url: '', reward_amount: 0.10 });
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskDialog, setShowTaskDialog] = useState(false);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">Loading...</div>
+      </div>
+    );
+  }
 
   if (!user) {
     return <Navigate to="/auth" replace />;
