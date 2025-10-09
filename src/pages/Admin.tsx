@@ -37,6 +37,18 @@ interface Withdrawal {
   username?: string;
 }
 
+interface Deposit {
+  id: string;
+  amount: number;
+  status: string;
+  created_at: string;
+  user_id: string;
+  username?: string;
+  payment_method?: string;
+  payment_details?: any;
+  description?: string;
+}
+
 const Admin = () => {
   const { user, profile, signOut } = useAuth();
   const { toast } = useToast();
@@ -44,6 +56,7 @@ const Admin = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
+  const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [loading, setLoading] = useState(true);
   
   const [taskForm, setTaskForm] = useState({ title: '', url: '', reward_amount: 0.10 });
@@ -100,6 +113,32 @@ const Admin = () => {
           })
         );
         setWithdrawals(withdrawalsWithUsernames);
+      }
+
+      // Fetch deposits (from wallet_transactions with type 'deposit')
+      const { data: depositsData } = await supabase
+        .from('wallet_transactions')
+        .select('*')
+        .eq('transaction_type', 'deposit')
+        .order('created_at', { ascending: false });
+      
+      if (depositsData) {
+        // Get usernames for each deposit
+        const depositsWithUsernames = await Promise.all(
+          depositsData.map(async (deposit) => {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('username')
+              .eq('user_id', deposit.user_id)
+              .single();
+            
+            return {
+              ...deposit,
+              username: profile?.username || 'Unknown'
+            };
+          })
+        );
+        setDeposits(depositsWithUsernames);
       }
       
     } catch (error) {
@@ -217,6 +256,53 @@ const Admin = () => {
     }
   };
 
+  const handleDepositAction = async (depositId: string, userId: string, amount: number, status: 'completed' | 'rejected') => {
+    try {
+      // Update deposit status
+      const { error: depositError } = await supabase
+        .from('wallet_transactions')
+        .update({ status })
+        .eq('id', depositId);
+      
+      if (depositError) throw depositError;
+
+      // If approved, update user's wallet balance and total_deposited
+      if (status === 'completed') {
+        // First fetch current balance
+        const { data: profile, error: fetchError } = await supabase
+          .from('profiles')
+          .select('wallet_balance, total_deposited')
+          .eq('user_id', userId)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        // Update with new values
+        const { error: balanceError } = await supabase
+          .from('profiles')
+          .update({ 
+            wallet_balance: (profile.wallet_balance || 0) + amount,
+            total_deposited: (profile.total_deposited || 0) + amount
+          })
+          .eq('user_id', userId);
+        
+        if (balanceError) throw balanceError;
+      }
+      
+      toast({ 
+        title: `Deposit ${status === 'completed' ? 'approved' : 'rejected'} successfully!` 
+      });
+      fetchData();
+      
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
   const openTaskDialog = (task?: Task) => {
     if (task) {
       setEditingTask(task);
@@ -256,7 +342,7 @@ const Admin = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -288,6 +374,18 @@ const Admin = () => {
               </div>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pending Deposits</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {deposits.filter(d => d.status === 'pending').length}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Main Content */}
@@ -295,6 +393,7 @@ const Admin = () => {
           <TabsList>
             <TabsTrigger value="tasks">Tasks Management</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="deposits">Deposits</TabsTrigger>
             <TabsTrigger value="withdrawals">Withdrawals</TabsTrigger>
           </TabsList>
 
@@ -431,6 +530,72 @@ const Admin = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="deposits" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Deposit Requests</CardTitle>
+                <CardDescription>Approve or reject user deposit requests</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {deposits.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">No deposits found</p>
+                  ) : (
+                    deposits.map((deposit) => (
+                      <div key={deposit.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex-1">
+                          <h3 className="font-medium">{deposit.username || 'Unknown User'}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Requested: {new Date(deposit.created_at).toLocaleDateString()} {new Date(deposit.created_at).toLocaleTimeString()}
+                          </p>
+                          <p className="font-medium text-lg">${deposit.amount.toFixed(2)}</p>
+                          {deposit.payment_method && (
+                            <p className="text-sm text-muted-foreground">Method: {deposit.payment_method}</p>
+                          )}
+                          {deposit.payment_details && (
+                            <p className="text-sm text-muted-foreground">
+                              Details: {JSON.stringify(deposit.payment_details)}
+                            </p>
+                          )}
+                          {deposit.description && (
+                            <p className="text-sm text-muted-foreground">{deposit.description}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge 
+                            variant={
+                              deposit.status === 'completed' ? 'default' : 
+                              deposit.status === 'rejected' ? 'destructive' : 'secondary'
+                            }
+                          >
+                            {deposit.status}
+                          </Badge>
+                          {deposit.status === 'pending' && (
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => handleDepositAction(deposit.id, deposit.user_id, deposit.amount, 'completed')}
+                              >
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDepositAction(deposit.id, deposit.user_id, deposit.amount, 'rejected')}
+                              >
+                                Reject
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
