@@ -58,6 +58,11 @@ const Header: React.FC<HeaderProps> = ({ tasksCompletedToday = 0, dailyTaskLimit
     { path: '/vip', label: 'VIP Levels', icon: Crown },
   ];
 
+  // Add admin link if user is admin
+  const allNavItems = profile?.role === 'admin' 
+    ? [...navItems, { path: '/admin', label: 'Admin Panel', icon: Crown }]
+    : navItems;
+
   const isActive = (path: string) => location.pathname === path;
 
   return (
@@ -74,7 +79,7 @@ const Header: React.FC<HeaderProps> = ({ tasksCompletedToday = 0, dailyTaskLimit
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            {navItems.map(({ path, label, icon: Icon }) => (
+            {allNavItems.map(({ path, label, icon: Icon }) => (
               <Link
                 key={path}
                 to={path}
@@ -170,7 +175,7 @@ const Header: React.FC<HeaderProps> = ({ tasksCompletedToday = 0, dailyTaskLimit
               </div>
 
               {/* Mobile Navigation */}
-              {navItems.map(({ path, label, icon: Icon }) => (
+              {allNavItems.map(({ path, label, icon: Icon }) => (
                 <Link
                   key={path}
                   to={path}

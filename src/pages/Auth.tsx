@@ -15,11 +15,14 @@ const Auth = () => {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const { user, signIn, signUp } = useAuth();
+  const { signIn, signUp } = useAuth();
   const { toast } = useToast();
 
+  const { user, profile } = useAuth();
+  
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    // Redirect admin to admin panel, regular users to dashboard
+    return <Navigate to={profile?.role === 'admin' ? '/admin' : '/dashboard'} replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
