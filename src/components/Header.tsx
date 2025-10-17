@@ -22,7 +22,7 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ tasksCompletedToday = 0, dailyTaskLimit = 5 }) => {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, isAdmin, signOut } = useAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -59,7 +59,7 @@ const Header: React.FC<HeaderProps> = ({ tasksCompletedToday = 0, dailyTaskLimit
   ];
 
   // Add admin link if user is admin
-  const allNavItems = profile?.role === 'admin' 
+  const allNavItems = isAdmin
     ? [...navItems, { path: '/admin', label: 'Admin Panel', icon: Crown }]
     : navItems;
 
