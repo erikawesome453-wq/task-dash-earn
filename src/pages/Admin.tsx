@@ -22,6 +22,7 @@ interface Task {
 
 interface User {
   id: string;
+  user_id: string;
   username: string;
   wallet_balance: number;
   last_task_date: string;
@@ -57,6 +58,7 @@ const Admin = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [deposits, setDeposits] = useState<Deposit[]>([]);
+  const [adminIds, setAdminIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   
   const [taskForm, setTaskForm] = useState({ title: '', url: '', reward_amount: 0.10 });
@@ -97,14 +99,22 @@ const Admin = () => {
       
       if (tasksData) setTasks(tasksData);
 
-      // Fetch users
+      // Fetch users (all profiles)
       const { data: usersData } = await supabase
         .from('profiles')
         .select('*')
-        .eq('role', 'user')
         .order('created_at', { ascending: false });
       
       if (usersData) setUsers(usersData);
+
+      // Fetch admin roles
+      const { data: adminRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin');
+      if (adminRoles) {
+        setAdminIds(new Set(adminRoles.map(r => r.user_id)));
+      }
 
       // Fetch withdrawals with user info
       const { data: withdrawalsData } = await supabase
@@ -319,6 +329,30 @@ const Admin = () => {
     }
   };
 
+  const handleRoleToggle = async (targetUserId: string, makeAdmin: boolean) => {
+    try {
+      if (makeAdmin) {
+        const { error } = await supabase
+          .from('user_roles')
+          .insert({ user_id: targetUserId, role: 'admin' });
+        if (error) throw error;
+        toast({ title: 'User promoted to admin' });
+      } else {
+        const { error } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', targetUserId)
+          .eq('role', 'admin');
+        if (error) throw error;
+        toast({ title: 'Admin role removed' });
+      }
+      // Refresh admin roles and users
+      await fetchData();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    }
+  };
+
   const openTaskDialog = (task?: Task) => {
     if (task) {
       setEditingTask(task);
@@ -527,22 +561,40 @@ const Admin = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {users.map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  {users.map((u) => (
+                    <div key={u.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
-                        <h3 className="font-medium">{user.username}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium">{u.username}</h3>
+                          {adminIds.has(u.user_id) && (
+                            <Badge>Admin</Badge>
+                          )}
+                        </div>
                         <p className="text-sm text-muted-foreground">
-                          Joined: {new Date(user.created_at).toLocaleDateString()}
+                          Joined: {new Date(u.created_at).toLocaleDateString()}
                         </p>
-                        {user.last_task_date && (
+                        {u.last_task_date && (
                           <p className="text-sm text-muted-foreground">
-                            Last task: {new Date(user.last_task_date).toLocaleDateString()}
+                            Last task: {new Date(u.last_task_date).toLocaleDateString()}
                           </p>
                         )}
                       </div>
-                      <div className="text-right">
-                        <p className="font-medium">${user.wallet_balance.toFixed(2)}</p>
-                        <p className="text-sm text-muted-foreground">Balance</p>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <p className="font-medium">${u.wallet_balance.toFixed(2)}</p>
+                          <p className="text-sm text-muted-foreground">Balance</p>
+                        </div>
+                        <div>
+                          {adminIds.has(u.user_id) ? (
+                            <Button size="sm" variant="outline" onClick={() => handleRoleToggle(u.user_id, false)}>
+                              Remove Admin
+                            </Button>
+                          ) : (
+                            <Button size="sm" onClick={() => handleRoleToggle(u.user_id, true)}>
+                              Make Admin
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
