@@ -15,19 +15,19 @@ const Auth = () => {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const { user, profile, loading: authLoading, signIn, signUp } = useAuth();
+  const { user, isAdmin, loading: authLoading, signIn, signUp } = useAuth();
   const { toast } = useToast();
   
   if (user) {
-    // Wait until profile loads to decide where to go
-    if (authLoading || !profile) {
+    // Wait until role loads to decide where to go
+    if (authLoading || isAdmin === null) {
       return (
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">Loading...</div>
         </div>
       );
     }
-    return <Navigate to={profile.role === 'admin' ? '/admin' : '/dashboard'} replace />;
+    return <Navigate to={isAdmin ? '/admin' : '/dashboard'} replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

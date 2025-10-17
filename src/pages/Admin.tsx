@@ -50,7 +50,7 @@ interface Deposit {
 }
 
 const Admin = () => {
-  const { user, profile, signOut, loading: authLoading } = useAuth();
+  const { user, isAdmin, signOut, loading: authLoading } = useAuth();
   const { toast } = useToast();
   
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -75,7 +75,15 @@ const Admin = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  if (profile?.role !== 'admin') {
+  if (isAdmin === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
 

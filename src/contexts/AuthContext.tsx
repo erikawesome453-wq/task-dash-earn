@@ -6,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: any;
+  isAdmin: boolean | null;
   loading: boolean;
   signUp: (email: string, password: string, username: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
@@ -27,17 +28,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refreshProfile = async () => {
-    if (!user) return;
-    
+    if (!user) {
+      setIsAdmin(null);
+      return;
+    }
+
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('user_id', user.id)
       .maybeSingle();
-    
+
     if (!error && data) {
       setProfile(data);
     } else if (!data && !error) {
@@ -51,10 +56,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         })
         .select()
         .single();
-      
+
       if (newProfile) {
         setProfile(newProfile);
       }
+    }
+
+    // Fetch admin role using RPC to secure against client-side tampering
+    const { data: adminFlag, error: roleError } = await supabase.rpc('is_admin', { user_uuid: user.id });
+    if (!roleError) {
+      setIsAdmin(Boolean(adminFlag));
+    } else {
+      setIsAdmin(null);
     }
   };
 
@@ -71,6 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }, 0);
         } else {
           setProfile(null);
+          setIsAdmin(null);
         }
         
         setLoading(false);
@@ -129,6 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     session,
     profile,
+    isAdmin,
     loading,
     signUp,
     signIn,
