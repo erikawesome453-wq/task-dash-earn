@@ -18,7 +18,11 @@ import {
   XCircle,
   CreditCard,
   Smartphone,
-  Building2
+  Building2,
+  Eye,
+  Calendar,
+  FileText,
+  RefreshCw
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,8 +35,10 @@ interface Transaction {
   amount: number;
   status: string;
   payment_method?: string;
+  payment_details?: any;
   description?: string;
   created_at: string;
+  updated_at?: string;
 }
 
 const WalletPage = () => {
@@ -47,10 +53,62 @@ const WalletPage = () => {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
+
+  // Set up real-time subscription for profile updates (balance changes)
+  useEffect(() => {
+    if (!user) return;
+
+    const profileChannel = supabase
+      .channel('profile-balance-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Profile updated:', payload);
+          refreshProfile();
+          toast({
+            title: "Balance Updated",
+            description: "Your wallet balance has been updated."
+          });
+        }
+      )
+      .subscribe();
+
+    // Subscribe to transaction status changes
+    const transactionChannel = supabase
+      .channel('transaction-status-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'wallet_transactions',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Transaction updated:', payload);
+          fetchTransactions();
+          refreshProfile();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(profileChannel);
+      supabase.removeChannel(transactionChannel);
+    };
+  }, [user]);
 
   useEffect(() => {
     fetchTransactions();
@@ -244,6 +302,18 @@ const WalletPage = () => {
       case 'bank_transfer': return <Building2 className="h-4 w-4" />;
       default: return <Wallet className="h-4 w-4" />;
     }
+  };
+
+  const openTransactionDetails = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setIsDetailsOpen(true);
+  };
+
+  const formatPaymentDetails = (details: any) => {
+    if (!details) return null;
+    if (typeof details === 'string') return details;
+    if (details.details) return details.details;
+    return JSON.stringify(details, null, 2);
   };
 
   return (
@@ -481,7 +551,8 @@ const WalletPage = () => {
                     {transactions.map((transaction) => (
                       <div 
                         key={transaction.id}
-                        className="flex items-center justify-between p-4 border border-border/50 rounded-xl hover-lift"
+                        className="flex items-center justify-between p-4 border border-border/50 rounded-xl hover-lift cursor-pointer transition-all hover:border-primary/30"
+                        onClick={() => openTransactionDetails(transaction)}
                       >
                         <div className="flex items-center gap-4">
                           <div className="flex-shrink-0">
@@ -525,6 +596,9 @@ const WalletPage = () => {
                             </div>
                             {getStatusBadge(transaction.status)}
                           </div>
+                          <Button variant="ghost" size="sm" className="ml-2">
+                            <Eye className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -534,6 +608,134 @@ const WalletPage = () => {
             </Card>
           </div>
         </div>
+
+        {/* Transaction Details Modal */}
+        <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                Transaction Details
+              </DialogTitle>
+              <DialogDescription>
+                Full details for this transaction
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedTransaction && (
+              <div className="space-y-6">
+                {/* Transaction Type & Amount */}
+                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    {getTransactionIcon(selectedTransaction.transaction_type)}
+                    <span className="font-medium capitalize text-lg">
+                      {selectedTransaction.transaction_type.replace('_', ' ')}
+                    </span>
+                  </div>
+                  <div className={`text-2xl font-bold ${
+                    selectedTransaction.transaction_type === 'withdraw' ? 'text-red-500' : 'text-green-500'
+                  }`}>
+                    {selectedTransaction.transaction_type === 'withdraw' ? '-' : '+'}
+                    ${selectedTransaction.amount.toFixed(2)}
+                  </div>
+                </div>
+
+                {/* Status */}
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Status</span>
+                  {getStatusBadge(selectedTransaction.status)}
+                </div>
+
+                <Separator />
+
+                {/* Timestamps */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-primary" />
+                    Timestamps
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Created</p>
+                      <p className="font-medium">
+                        {new Date(selectedTransaction.created_at).toLocaleDateString()}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(selectedTransaction.created_at).toLocaleTimeString()}
+                      </p>
+                    </div>
+                    {selectedTransaction.updated_at && selectedTransaction.updated_at !== selectedTransaction.created_at && (
+                      <div>
+                        <p className="text-muted-foreground">Last Updated</p>
+                        <p className="font-medium">
+                          {new Date(selectedTransaction.updated_at).toLocaleDateString()}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(selectedTransaction.updated_at).toLocaleTimeString()}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Payment Method */}
+                {selectedTransaction.payment_method && (
+                  <>
+                    <Separator />
+                    <div className="space-y-3">
+                      <h4 className="font-semibold flex items-center gap-2">
+                        <CreditCard className="h-4 w-4 text-primary" />
+                        Payment Information
+                      </h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Method</span>
+                          <div className="flex items-center gap-2">
+                            {getPaymentMethodIcon(selectedTransaction.payment_method)}
+                            <span className="capitalize font-medium">
+                              {selectedTransaction.payment_method.replace('_', ' ')}
+                            </span>
+                          </div>
+                        </div>
+                        {selectedTransaction.payment_details && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-muted-foreground">Details</span>
+                            <span className="font-medium text-right max-w-[200px] truncate">
+                              {formatPaymentDetails(selectedTransaction.payment_details)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Description / Notes */}
+                {selectedTransaction.description && (
+                  <>
+                    <Separator />
+                    <div className="space-y-3">
+                      <h4 className="font-semibold flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-primary" />
+                        Description
+                      </h4>
+                      <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+                        {selectedTransaction.description}
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                {/* Transaction ID */}
+                <Separator />
+                <div className="text-xs text-muted-foreground">
+                  <span className="font-medium">Transaction ID:</span>
+                  <span className="ml-2 font-mono">{selectedTransaction.id}</span>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
