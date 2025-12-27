@@ -122,7 +122,8 @@ const WalletPage = () => {
       setIsDepositOpen(false);
       setDepositAmount('');
       setPaymentDetails('');
-      fetchTransactions();
+      await fetchTransactions();
+      await refreshProfile();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -200,7 +201,8 @@ const WalletPage = () => {
       setIsWithdrawOpen(false);
       setWithdrawAmount('');
       setPaymentDetails('');
-      fetchTransactions();
+      await fetchTransactions();
+      await refreshProfile();
     } catch (error: any) {
       toast({
         title: "Error",

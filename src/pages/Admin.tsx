@@ -259,14 +259,50 @@ const Admin = () => {
     }
   };
 
-  const handleWithdrawalAction = async (withdrawalId: string, status: 'approved' | 'rejected') => {
+  const handleWithdrawalAction = async (withdrawalId: string, userId: string, amount: number, status: 'approved' | 'rejected') => {
     try {
+      // Update withdrawal status
       const { error } = await supabase
         .from('withdrawals')
         .update({ status })
         .eq('id', withdrawalId);
       
       if (error) throw error;
+
+      // If approved, deduct from user's wallet balance
+      if (status === 'approved') {
+        // First fetch current balance
+        const { data: profile, error: fetchError } = await supabase
+          .from('profiles')
+          .select('wallet_balance')
+          .eq('user_id', userId)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        const newBalance = Math.max(0, (profile.wallet_balance || 0) - amount);
+
+        // Update with new balance
+        const { error: balanceError } = await supabase
+          .from('profiles')
+          .update({ wallet_balance: newBalance })
+          .eq('user_id', userId);
+        
+        if (balanceError) throw balanceError;
+
+        // Log the withdrawal transaction
+        const { error: transactionError } = await supabase
+          .from('wallet_transactions')
+          .insert({
+            user_id: userId,
+            transaction_type: 'withdraw',
+            amount: amount,
+            status: 'completed',
+            description: 'Withdrawal approved by admin'
+          });
+
+        if (transactionError) console.error('Transaction log error:', transactionError);
+      }
       
       toast({ 
         title: `Withdrawal ${status} successfully!` 
@@ -292,23 +328,38 @@ const Admin = () => {
       
       if (depositError) throw depositError;
 
-      // If approved, update user's wallet balance and total_deposited
+      // If approved, update user's wallet balance, total_deposited, and recalculate VIP level
       if (status === 'completed') {
-        // First fetch current balance
+        // First fetch current profile
         const { data: profile, error: fetchError } = await supabase
           .from('profiles')
-          .select('wallet_balance, total_deposited')
+          .select('wallet_balance, total_deposited, total_earned, vip_level')
           .eq('user_id', userId)
           .single();
 
         if (fetchError) throw fetchError;
 
-        // Update with new values
+        const newTotalDeposited = (profile.total_deposited || 0) + amount;
+        const newWalletBalance = (profile.wallet_balance || 0) + amount;
+        const totalActivity = newTotalDeposited + (profile.total_earned || 0);
+
+        // Calculate new VIP level based on total activity
+        const { data: newVipLevel, error: vipError } = await supabase.rpc('calculate_vip_level', {
+          total_deposits: newTotalDeposited,
+          total_earnings: profile.total_earned || 0
+        });
+
+        if (vipError) {
+          console.error('VIP calculation error:', vipError);
+        }
+
+        // Update with new values including VIP level
         const { error: balanceError } = await supabase
           .from('profiles')
           .update({ 
-            wallet_balance: (profile.wallet_balance || 0) + amount,
-            total_deposited: (profile.total_deposited || 0) + amount
+            wallet_balance: newWalletBalance,
+            total_deposited: newTotalDeposited,
+            vip_level: newVipLevel ?? profile.vip_level ?? 0
           })
           .eq('user_id', userId);
         
@@ -699,14 +750,14 @@ const Admin = () => {
                           <div className="flex gap-2">
                             <Button
                               size="sm"
-                              onClick={() => handleWithdrawalAction(withdrawal.id, 'approved')}
+                              onClick={() => handleWithdrawalAction(withdrawal.id, withdrawal.user_id, withdrawal.amount, 'approved')}
                             >
                               Approve
                             </Button>
                             <Button
                               size="sm"
                               variant="destructive"
-                              onClick={() => handleWithdrawalAction(withdrawal.id, 'rejected')}
+                              onClick={() => handleWithdrawalAction(withdrawal.id, withdrawal.user_id, withdrawal.amount, 'rejected')}
                             >
                               Reject
                             </Button>

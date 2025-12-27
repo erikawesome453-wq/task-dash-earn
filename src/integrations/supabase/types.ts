@@ -277,22 +277,13 @@ export type Database = {
         Args: { total_deposits: number; total_earnings: number }
         Returns: number
       }
-      ensure_admin_role: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      generate_referral_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      ensure_admin_role: { Args: never; Returns: undefined }
+      generate_referral_code: { Args: never; Returns: string }
       generate_task_reward: {
         Args: { user_vip_level: number }
         Returns: number
       }
-      get_daily_task_limit: {
-        Args: { vip_level: number }
-        Returns: number
-      }
+      get_daily_task_limit: { Args: { vip_level: number }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -300,10 +291,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin: {
-        Args: { user_uuid: string }
-        Returns: boolean
-      }
+      is_admin: { Args: { user_uuid: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
