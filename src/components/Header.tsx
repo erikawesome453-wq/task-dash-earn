@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,10 +11,10 @@ import {
   Crown, 
   LogOut,
   Menu,
-  X
+  X,
+  BarChart3
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useState } from 'react';
 
 interface HeaderProps {
   tasksCompletedToday?: number;
@@ -52,6 +52,7 @@ const Header: React.FC<HeaderProps> = ({ tasksCompletedToday = 0, dailyTaskLimit
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: CheckSquare },
+    { path: '/analytics', label: 'Analytics', icon: BarChart3 },
     { path: '/profile', label: 'Profile', icon: User },
     { path: '/wallet', label: 'Wallet', icon: Wallet },
     { path: '/referrals', label: 'Referrals', icon: Users },
