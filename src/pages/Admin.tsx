@@ -259,6 +259,19 @@ const Admin = () => {
     }
   };
 
+  const sendNotification = async (userId: string, type: string, amount: number) => {
+    try {
+      const { error } = await supabase.functions.invoke('send-notification', {
+        body: { userId, type, amount }
+      });
+      if (error) {
+        console.error('Notification error:', error);
+      }
+    } catch (err) {
+      console.error('Failed to send notification:', err);
+    }
+  };
+
   const handleWithdrawalAction = async (withdrawalId: string, userId: string, amount: number, status: 'approved' | 'rejected') => {
     try {
       // Update withdrawal status
@@ -303,6 +316,9 @@ const Admin = () => {
 
         if (transactionError) console.error('Transaction log error:', transactionError);
       }
+
+      // Send email notification to user
+      await sendNotification(userId, `withdrawal_${status}`, amount);
       
       toast({ 
         title: `Withdrawal ${status} successfully!` 
@@ -341,7 +357,6 @@ const Admin = () => {
 
         const newTotalDeposited = (profile.total_deposited || 0) + amount;
         const newWalletBalance = (profile.wallet_balance || 0) + amount;
-        const totalActivity = newTotalDeposited + (profile.total_earned || 0);
 
         // Calculate new VIP level based on total activity
         const { data: newVipLevel, error: vipError } = await supabase.rpc('calculate_vip_level', {
@@ -365,6 +380,10 @@ const Admin = () => {
         
         if (balanceError) throw balanceError;
       }
+
+      // Send email notification to user
+      const notificationType = status === 'completed' ? 'deposit_approved' : 'deposit_rejected';
+      await sendNotification(userId, notificationType, amount);
       
       toast({ 
         title: `Deposit ${status === 'completed' ? 'approved' : 'rejected'} successfully!` 
