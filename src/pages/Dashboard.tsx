@@ -268,98 +268,98 @@ const Dashboard = () => {
         <div className="absolute bottom-20 left-10 w-80 h-80 bg-accent/5 rounded-full blur-3xl float" style={{animationDelay: '2s'}}></div>
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8 max-w-7xl space-y-8">
+      <div className="relative z-10 container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl space-y-4 sm:space-y-8">
         {/* Welcome Section */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold">
+        <div className="text-center space-y-2 sm:space-y-4">
+          <h1 className="text-2xl sm:text-4xl font-bold">
             Welcome back, <span className="text-gradient-primary">{profile?.username}</span>!
           </h1>
-          <p className="text-lg text-muted-foreground">Ready to earn some money today?</p>
+          <p className="text-sm sm:text-lg text-muted-foreground">Ready to earn some money today?</p>
         </div>
 
         {/* Progress Bar */}
-        <div className="card-elegant p-6 hover-lift">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Target className="h-6 w-6 text-primary" />
-              <h3 className="text-xl font-semibold">Daily Progress</h3>
+        <div className="card-elegant p-4 sm:p-6 hover-lift">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Target className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+              <h3 className="text-base sm:text-xl font-semibold">Daily Progress</h3>
             </div>
-            <Badge variant={tasksCompletedToday >= dailyTaskLimit ? "default" : "secondary"} className="text-sm">
+            <Badge variant={tasksCompletedToday >= dailyTaskLimit ? "default" : "secondary"} className="text-xs sm:text-sm">
               {tasksCompletedToday}/{dailyTaskLimit} Tasks
             </Badge>
           </div>
-          <Progress value={progressPercentage} className="h-3" />
-          <p className="text-sm text-muted-foreground mt-2">
+          <Progress value={progressPercentage} className="h-2 sm:h-3" />
+          <p className="text-xs sm:text-sm text-muted-foreground mt-2">
             {dailyTaskLimit - tasksCompletedToday} tasks remaining today
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           <Card className="card-elegant hover-lift group">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <CardTitle className="text-lg font-medium">Wallet Balance</CardTitle>
-              <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Wallet className="h-6 w-6 text-primary-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 sm:pb-3 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-lg font-medium">Balance</CardTitle>
+              <div className="w-8 h-8 sm:w-12 sm:h-12 gradient-primary rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Wallet className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-gradient-primary">
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-lg sm:text-3xl font-bold text-gradient-primary">
                 ${parseFloat(profile?.wallet_balance || '0').toFixed(2)}
               </div>
-              <p className="text-sm text-muted-foreground mt-1">Available for withdrawal</p>
+              <p className="text-[10px] sm:text-sm text-muted-foreground mt-1 hidden sm:block">Available for withdrawal</p>
             </CardContent>
           </Card>
 
           <Card className="card-elegant hover-lift group">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <CardTitle className="text-lg font-medium">Today's Earnings</CardTitle>
-              <div className="w-12 h-12 gradient-accent rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <TrendingUp className="h-6 w-6 text-primary-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 sm:pb-3 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-lg font-medium">Today</CardTitle>
+              <div className="w-8 h-8 sm:w-12 sm:h-12 gradient-accent rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <TrendingUp className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-gradient-accent">
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-lg sm:text-3xl font-bold text-gradient-accent">
                 ${completedTasks.reduce((sum, task) => sum + task.reward_earned, 0).toFixed(2)}
               </div>
-              <p className="text-sm text-muted-foreground mt-1">From {tasksCompletedToday} completed tasks</p>
+              <p className="text-[10px] sm:text-sm text-muted-foreground mt-1 hidden sm:block">From {tasksCompletedToday} completed tasks</p>
             </CardContent>
           </Card>
 
           <Card className="card-elegant hover-lift group">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <CardTitle className="text-lg font-medium">VIP Level</CardTitle>
-              <div className="w-12 h-12 gradient-accent rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Crown className="h-6 w-6 text-primary-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 sm:pb-3 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-lg font-medium">VIP</CardTitle>
+              <div className="w-8 h-8 sm:w-12 sm:h-12 gradient-accent rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Crown className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-gradient-accent">
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-sm sm:text-3xl font-bold text-gradient-accent">
                 {profile?.vip_level === 0 ? 'Standard' : 
-                 profile?.vip_level === 1 ? 'Level 1' :
+                 profile?.vip_level === 1 ? 'Lv 1' :
                  profile?.vip_level === 2 ? 'VIP' :
                  profile?.vip_level === 3 ? 'VVIP' :
-                 profile?.vip_level === 4 ? 'Super VIP' :
-                 profile?.vip_level === 5 ? 'Super VVIP' : 'Standard'}
+                 profile?.vip_level === 4 ? 'S-VIP' :
+                 profile?.vip_level === 5 ? 'S-VVIP' : 'Standard'}
               </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                {dailyTaskLimit} tasks per day
+              <p className="text-[10px] sm:text-sm text-muted-foreground mt-1 hidden sm:block">
+                {dailyTaskLimit} tasks/day
               </p>
             </CardContent>
           </Card>
 
           <Card className="card-elegant hover-lift group">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <CardTitle className="text-lg font-medium">Referrals</CardTitle>
-              <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Users className="h-6 w-6 text-primary-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 sm:pb-3 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-lg font-medium">Referrals</CardTitle>
+              <div className="w-8 h-8 sm:w-12 sm:h-12 gradient-primary rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Users className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-gradient-primary">
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-lg sm:text-3xl font-bold text-gradient-primary">
                 {profile?.total_referrals || 0}
               </div>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-[10px] sm:text-sm text-muted-foreground mt-1 hidden sm:block">
                 ${parseFloat(profile?.referral_earnings || '0').toFixed(2)} earned
               </p>
             </CardContent>
@@ -368,81 +368,81 @@ const Dashboard = () => {
 
         {/* Available Tasks */}
         <Card className="card-elegant">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Zap className="h-6 w-6 text-primary" />
+          <CardHeader className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                 <div>
-                  <CardTitle className="text-2xl">Available Tasks</CardTitle>
-                  <CardDescription className="text-base">
+                  <CardTitle className="text-lg sm:text-2xl">Available Tasks</CardTitle>
+                  <CardDescription className="text-xs sm:text-base">
                     Complete tasks to earn instant rewards
                   </CardDescription>
                 </div>
               </div>
               {tasksCompletedToday < dailyTaskLimit && (
-                <Badge className="gradient-primary text-primary-foreground">
+                <Badge className="gradient-primary text-primary-foreground text-xs">
                   {availableTasks.length} Available
                 </Badge>
               )}
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0">
             {tasksCompletedToday >= dailyTaskLimit ? (
-              <div className="text-center py-12 space-y-4">
-                <Clock className="h-16 w-16 text-muted-foreground mx-auto" />
+              <div className="text-center py-8 sm:py-12 space-y-3 sm:space-y-4">
+                <Clock className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mx-auto" />
                 <div>
-                  <p className="text-2xl font-bold">Daily limit reached!</p>
-                  <p className="text-muted-foreground text-lg">Come back tomorrow for more earning opportunities.</p>
+                  <p className="text-lg sm:text-2xl font-bold">Daily limit reached!</p>
+                  <p className="text-muted-foreground text-sm sm:text-lg">Come back tomorrow for more earning opportunities.</p>
                 </div>
               </div>
             ) : availableTasks.length === 0 ? (
-              <div className="text-center py-12 space-y-4">
-                <Award className="h-16 w-16 text-muted-foreground mx-auto" />
+              <div className="text-center py-8 sm:py-12 space-y-3 sm:space-y-4">
+                <Award className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mx-auto" />
                 <div>
-                  <p className="text-2xl font-bold">All tasks completed!</p>
-                  <p className="text-muted-foreground text-lg">Great job! Come back tomorrow for more tasks.</p>
+                  <p className="text-lg sm:text-2xl font-bold">All tasks completed!</p>
+                  <p className="text-muted-foreground text-sm sm:text-lg">Great job! Come back tomorrow for more tasks.</p>
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {availableTasks.map((task) => (
                   <Card key={task.id} className="hover-lift cursor-pointer group border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden">
                     {/* Product Image */}
-                    <div className="relative h-48 overflow-hidden">
+                    <div className="relative h-32 sm:h-48 overflow-hidden">
                       <img 
                         src={task.image_url || 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop'}
                         alt={task.title}
                         className="w-full h-full object-cover animate-bounce group-hover:scale-110 transition-all duration-300"
                       />
-                      <div className="absolute top-4 right-4">
-                        <Badge className="gradient-primary text-primary-foreground font-semibold shadow-lg">
+                      <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
+                        <Badge className="gradient-primary text-primary-foreground font-semibold shadow-lg text-xs sm:text-sm">
                           +${task.reward_amount.toFixed(2)}
                         </Badge>
                       </div>
-                      <div className="absolute top-4 left-4">
-                        <Badge variant="secondary" className="bg-white/90 text-gray-800 shadow-sm">
+                      <div className="absolute top-2 left-2 sm:top-4 sm:left-4">
+                        <Badge variant="secondary" className="bg-white/90 text-gray-800 shadow-sm text-xs">
                           {task.category || 'General'}
                         </Badge>
                       </div>
                     </div>
 
-                    <CardContent className="p-6">
+                    <CardContent className="p-4 sm:p-6">
                       {/* Platform Badge */}
-                      <div className="flex items-center justify-between mb-3">
-                        <Badge variant="outline" className="text-xs font-medium">
+                      <div className="flex items-center justify-between mb-2 sm:mb-3">
+                        <Badge variant="outline" className="text-[10px] sm:text-xs font-medium">
                           {task.platform || 'Website'}
                         </Badge>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-[10px] sm:text-xs text-muted-foreground">
                           Earn instantly
                         </div>
                       </div>
 
                       {/* Title and Description */}
-                      <div className="mb-4">
-                        <h3 className="font-semibold text-lg group-hover:text-primary transition-colors mb-2 line-clamp-1">
+                      <div className="mb-3 sm:mb-4">
+                        <h3 className="font-semibold text-sm sm:text-lg group-hover:text-primary transition-colors mb-1 sm:mb-2 line-clamp-1">
                           {task.title}
                         </h3>
-                        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                           {task.description || 'Complete this task to earn instant rewards'}
                         </p>
                       </div>
