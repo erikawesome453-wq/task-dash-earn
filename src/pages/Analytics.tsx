@@ -212,73 +212,73 @@ const Analytics = () => {
         <div className="absolute bottom-20 left-10 w-80 h-80 bg-accent/5 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8 max-w-7xl">
+      <div className="relative z-10 container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl">
         {/* Page Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4 sm:mb-8">
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <BarChart3 className="h-8 w-8 text-primary" />
+            <h1 className="text-xl sm:text-3xl font-bold flex items-center gap-2 sm:gap-3">
+              <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               Earnings Analytics
             </h1>
-            <p className="text-muted-foreground mt-2">Track your earnings and task completion</p>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">Track your earnings and task completion</p>
           </div>
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-4 sm:mb-8">
           <Card className="card-elegant">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Earnings</p>
-                  <p className="text-2xl font-bold text-gradient-primary">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">Total Earnings</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gradient-primary">
                     ${totals.totalEarnings.toFixed(2)}
                   </p>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <DollarSign className="h-5 w-5 text-primary" />
+                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="card-elegant">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Tasks Completed</p>
-                  <p className="text-2xl font-bold">{totals.totalTasks}</p>
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">Tasks Done</p>
+                  <p className="text-lg sm:text-2xl font-bold">{totals.totalTasks}</p>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-elegant">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Avg Daily</p>
-                  <p className="text-2xl font-bold">${totals.avgDailyEarning.toFixed(2)}</p>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-blue-500" />
+                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="card-elegant">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Completion Rate</p>
-                  <p className="text-2xl font-bold">{totals.completionRate.toFixed(0)}%</p>
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">Avg Daily</p>
+                  <p className="text-lg sm:text-2xl font-bold">${totals.avgDailyEarning.toFixed(2)}</p>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-purple-500/10 flex items-center justify-center">
-                  <Target className="h-5 w-5 text-purple-500" />
+                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="card-elegant">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">Completion</p>
+                  <p className="text-lg sm:text-2xl font-bold">{totals.completionRate.toFixed(0)}%</p>
+                </div>
+                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                  <Target className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" />
                 </div>
               </div>
             </CardContent>
@@ -286,11 +286,11 @@ const Analytics = () => {
         </div>
 
         {/* Period Selector */}
-        <Tabs value={period} onValueChange={(v) => setPeriod(v as typeof period)} className="mb-8">
-          <TabsList>
-            <TabsTrigger value="daily">Last 7 Days</TabsTrigger>
-            <TabsTrigger value="weekly">Last 4 Weeks</TabsTrigger>
-            <TabsTrigger value="monthly">Last 3 Months</TabsTrigger>
+        <Tabs value={period} onValueChange={(v) => setPeriod(v as typeof period)} className="mb-4 sm:mb-8">
+          <TabsList className="w-full sm:w-auto grid grid-cols-3 sm:flex">
+            <TabsTrigger value="daily" className="text-xs sm:text-sm">7 Days</TabsTrigger>
+            <TabsTrigger value="weekly" className="text-xs sm:text-sm">4 Weeks</TabsTrigger>
+            <TabsTrigger value="monthly" className="text-xs sm:text-sm">3 Months</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -299,18 +299,18 @@ const Analytics = () => {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Earnings Chart */}
             <Card className="card-elegant lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary" />
+              <CardHeader className="pb-2 sm:pb-4">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   Earnings Trend
                 </CardTitle>
-                <CardDescription>Your earnings over time</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">Your earnings over time</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="h-[300px]">
+              <CardContent className="px-2 sm:px-6">
+                <div className="h-[200px] sm:h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={earningsData}>
                       <defs>
@@ -347,35 +347,35 @@ const Analytics = () => {
 
             {/* Best Performance */}
             <Card className="card-elegant">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="h-5 w-5 text-primary" />
+              <CardHeader className="pb-2 sm:pb-4">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <Award className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   Best Performance
                 </CardTitle>
-                <CardDescription>Your top earning day</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">Your top earning day</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="text-center p-6 bg-primary/5 rounded-xl">
-                  <Calendar className="h-8 w-8 text-primary mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Best Day</p>
-                  <p className="font-semibold">{totals.bestDay}</p>
-                  <p className="text-2xl font-bold text-gradient-primary mt-1">
+              <CardContent className="space-y-4 sm:space-y-6">
+                <div className="text-center p-4 sm:p-6 bg-primary/5 rounded-xl">
+                  <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-primary mx-auto mb-2" />
+                  <p className="text-xs sm:text-sm text-muted-foreground">Best Day</p>
+                  <p className="font-semibold text-sm sm:text-base">{totals.bestDay}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gradient-primary mt-1">
                     ${totals.bestDayEarning.toFixed(2)}
                   </p>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">All-time Earned</span>
-                    <span className="font-semibold">${profile?.total_earned?.toFixed(2) || '0.00'}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">All-time Earned</span>
+                    <span className="font-semibold text-sm sm:text-base">${profile?.total_earned?.toFixed(2) || '0.00'}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">All-time Deposited</span>
-                    <span className="font-semibold">${profile?.total_deposited?.toFixed(2) || '0.00'}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">All-time Deposited</span>
+                    <span className="font-semibold text-sm sm:text-base">${profile?.total_deposited?.toFixed(2) || '0.00'}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Referral Earnings</span>
-                    <span className="font-semibold">${profile?.referral_earnings?.toFixed(2) || '0.00'}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">Referral Earnings</span>
+                    <span className="font-semibold text-sm sm:text-base">${profile?.referral_earnings?.toFixed(2) || '0.00'}</span>
                   </div>
                 </div>
               </CardContent>
@@ -383,16 +383,16 @@ const Analytics = () => {
 
             {/* Tasks by Category */}
             <Card className="card-elegant">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-primary" />
+              <CardHeader className="pb-2 sm:pb-4">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   Tasks by Category
                 </CardTitle>
-                <CardDescription>Distribution of completed tasks</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">Distribution of completed tasks</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-2 sm:px-6">
                 {taskStats.length > 0 ? (
-                  <div className="h-[250px]">
+                  <div className="h-[200px] sm:h-[250px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -424,15 +424,15 @@ const Analytics = () => {
 
             {/* Task Completion Bar Chart */}
             <Card className="card-elegant lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary" />
+              <CardHeader className="pb-2 sm:pb-4">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   Daily Task Completion
                 </CardTitle>
-                <CardDescription>Number of tasks completed each day</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">Number of tasks completed each day</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="h-[250px]">
+              <CardContent className="px-2 sm:px-6">
+                <div className="h-[200px] sm:h-[250px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={earningsData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />

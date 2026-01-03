@@ -326,29 +326,29 @@ const WalletPage = () => {
         <div className="absolute bottom-20 left-10 w-80 h-80 bg-accent/5 rounded-full blur-3xl float" style={{animationDelay: '2s'}}></div>
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8 max-w-6xl">
+      <div className="relative z-10 container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-6xl">
         {/* Page Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4 sm:mb-8">
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Wallet className="h-8 w-8 text-primary" />
+            <h1 className="text-xl sm:text-3xl font-bold flex items-center gap-2 sm:gap-3">
+              <Wallet className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               My Wallet
             </h1>
-            <p className="text-muted-foreground mt-2">Manage your funds and track transactions</p>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">Manage your funds and track transactions</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           {/* Wallet Overview */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 space-y-4 sm:space-y-6">
             {/* Balance Card */}
             <Card className="card-elegant hover-lift">
-              <CardHeader className="text-center pb-4">
-                <div className="w-16 h-16 gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Wallet className="h-8 w-8 text-primary-foreground" />
+              <CardHeader className="text-center pb-3 sm:pb-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 gradient-primary rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Wallet className="h-6 w-6 sm:h-8 sm:w-8 text-primary-foreground" />
                 </div>
-                <CardTitle className="text-sm text-muted-foreground">Current Balance</CardTitle>
-                <div className="text-3xl font-bold text-gradient-primary">
+                <CardTitle className="text-xs sm:text-sm text-muted-foreground">Current Balance</CardTitle>
+                <div className="text-2xl sm:text-3xl font-bold text-gradient-primary">
                   ${parseFloat(profile?.wallet_balance || '0').toFixed(2)}
                 </div>
               </CardHeader>
@@ -554,18 +554,18 @@ const WalletPage = () => {
                         className="flex items-center justify-between p-4 border border-border/50 rounded-xl hover-lift cursor-pointer transition-all hover:border-primary/30"
                         onClick={() => openTransactionDetails(transaction)}
                       >
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
                           <div className="flex-shrink-0">
                             {getTransactionIcon(transaction.transaction_type)}
                           </div>
                           
-                          <div className="flex-grow">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-medium capitalize">
+                          <div className="flex-grow min-w-0">
+                            <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-1">
+                              <span className="font-medium capitalize text-sm sm:text-base">
                                 {transaction.transaction_type.replace('_', ' ')}
                               </span>
                               {transaction.payment_method && (
-                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground">
                                   {getPaymentMethodIcon(transaction.payment_method)}
                                   <span className="capitalize">
                                     {transaction.payment_method.replace('_', ' ')}
@@ -575,20 +575,20 @@ const WalletPage = () => {
                             </div>
                             
                             {transaction.description && (
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-xs sm:text-sm text-muted-foreground truncate">
                                 {transaction.description}
                               </p>
                             )}
                             
                             <p className="text-xs text-muted-foreground">
-                              {new Date(transaction.created_at).toLocaleString()}
+                              {new Date(transaction.created_at).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
                         
-                        <div className="flex items-center gap-3 text-right">
+                        <div className="flex items-center gap-1 sm:gap-3 text-right flex-shrink-0">
                           <div>
-                            <div className={`font-semibold ${
+                            <div className={`font-semibold text-sm sm:text-base ${
                               transaction.transaction_type === 'withdraw' ? 'text-red-500' : 'text-green-500'
                             }`}>
                               {transaction.transaction_type === 'withdraw' ? '-' : '+'}
@@ -596,7 +596,7 @@ const WalletPage = () => {
                             </div>
                             {getStatusBadge(transaction.status)}
                           </div>
-                          <Button variant="ghost" size="sm" className="ml-2">
+                          <Button variant="ghost" size="sm" className="hidden sm:flex ml-2">
                             <Eye className="h-4 w-4" />
                           </Button>
                         </div>
