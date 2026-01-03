@@ -447,61 +447,61 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-3 sm:p-4">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h1 className="text-3xl font-bold">Admin Panel</h1>
-            <p className="text-muted-foreground">Manage tasks, users, and withdrawals</p>
+            <h1 className="text-xl sm:text-3xl font-bold">Admin Panel</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">Manage tasks, users, and withdrawals</p>
           </div>
-          <Button onClick={signOut} variant="outline">
+          <Button onClick={signOut} variant="outline" size="sm" className="w-full sm:w-auto">
             <LogOut className="mr-2 h-4 w-4" />
             Sign Out
           </Button>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">Users</CardTitle>
+              <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{users.length}</div>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-lg sm:text-2xl font-bold">{users.length}</div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Tasks</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">Active Tasks</CardTitle>
+              <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{tasks.filter(t => t.is_active).length}</div>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-lg sm:text-2xl font-bold">{tasks.filter(t => t.is_active).length}</div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Withdrawals</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium truncate">Withdrawals</CardTitle>
+              <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-lg sm:text-2xl font-bold">
                 {withdrawals.filter(w => w.status === 'pending').length}
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Deposits</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium truncate">Deposits</CardTitle>
+              <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-lg sm:text-2xl font-bold">
                 {deposits.filter(d => d.status === 'pending').length}
               </div>
             </CardContent>
@@ -509,12 +509,12 @@ const Admin = () => {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="tasks" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="tasks">Tasks Management</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="deposits">Deposits</TabsTrigger>
-            <TabsTrigger value="withdrawals">Withdrawals</TabsTrigger>
+        <Tabs defaultValue="tasks" className="space-y-4 sm:space-y-6">
+          <TabsList className="w-full sm:w-auto grid grid-cols-4 sm:flex h-auto">
+            <TabsTrigger value="tasks" className="text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">Tasks</TabsTrigger>
+            <TabsTrigger value="users" className="text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">Users</TabsTrigger>
+            <TabsTrigger value="deposits" className="text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">Deposits</TabsTrigger>
+            <TabsTrigger value="withdrawals" className="text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">Withdraws</TabsTrigger>
           </TabsList>
 
           <TabsContent value="tasks" className="space-y-6">
@@ -579,25 +579,26 @@ const Admin = () => {
                   </DialogContent>
                 </Dialog>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="p-3 sm:p-6">
+                <div className="space-y-3 sm:space-y-4">
                   {tasks.map((task) => (
-                    <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium">{task.title}</h3>
-                          <Badge variant={task.is_active ? "default" : "secondary"}>
+                    <div key={task.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="font-medium text-sm sm:text-base truncate">{task.title}</h3>
+                          <Badge variant={task.is_active ? "default" : "secondary"} className="text-xs">
                             {task.is_active ? "Active" : "Inactive"}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">{task.url}</p>
-                        <p className="text-sm font-medium">${task.reward_amount.toFixed(2)} reward</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">{task.url}</p>
+                        <p className="text-xs sm:text-sm font-medium">${task.reward_amount.toFixed(2)} reward</p>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleToggleTask(task)}
+                          className="text-xs flex-1 sm:flex-none"
                         >
                           {task.is_active ? 'Deactivate' : 'Activate'}
                         </Button>
@@ -629,39 +630,39 @@ const Admin = () => {
                 <CardTitle>Users Overview</CardTitle>
                 <CardDescription>View all registered users and their balances</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="p-3 sm:p-6">
+                <div className="space-y-3 sm:space-y-4">
                   {users.map((u) => (
-                    <div key={u.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium">{u.username}</h3>
+                    <div key={u.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg gap-3">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="font-medium text-sm sm:text-base">{u.username}</h3>
                           {adminIds.has(u.user_id) && (
-                            <Badge>Admin</Badge>
+                            <Badge className="text-xs">Admin</Badge>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           Joined: {new Date(u.created_at).toLocaleDateString()}
                         </p>
                         {u.last_task_date && (
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs sm:text-sm text-muted-foreground">
                             Last task: {new Date(u.last_task_date).toLocaleDateString()}
                           </p>
                         )}
                       </div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
-                          <p className="font-medium">${u.wallet_balance.toFixed(2)}</p>
-                          <p className="text-sm text-muted-foreground">Balance</p>
+                      <div className="flex items-center justify-between sm:justify-end gap-3">
+                        <div className="text-left sm:text-right">
+                          <p className="font-medium text-sm sm:text-base">${u.wallet_balance.toFixed(2)}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground">Balance</p>
                         </div>
                         <div>
                           {adminIds.has(u.user_id) ? (
-                            <Button size="sm" variant="outline" onClick={() => handleRoleToggle(u.user_id, false)}>
-                              Remove Admin
+                            <Button size="sm" variant="outline" onClick={() => handleRoleToggle(u.user_id, false)} className="text-xs sm:text-sm">
+                              Remove
                             </Button>
                           ) : (
-                            <Button size="sm" onClick={() => handleRoleToggle(u.user_id, true)}>
-                              Make Admin
+                            <Button size="sm" onClick={() => handleRoleToggle(u.user_id, true)} className="text-xs sm:text-sm">
+                              Admin
                             </Button>
                           )}
                         </div>
@@ -679,37 +680,30 @@ const Admin = () => {
                 <CardTitle>Deposit Requests</CardTitle>
                 <CardDescription>Approve or reject user deposit requests</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="p-3 sm:p-6">
+                <div className="space-y-3 sm:space-y-4">
                   {deposits.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">No deposits found</p>
+                    <p className="text-center text-muted-foreground py-8 text-sm">No deposits found</p>
                   ) : (
                     deposits.map((deposit) => (
-                      <div key={deposit.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex-1">
-                          <h3 className="font-medium">{deposit.username || 'Unknown User'}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Requested: {new Date(deposit.created_at).toLocaleDateString()} {new Date(deposit.created_at).toLocaleTimeString()}
+                      <div key={deposit.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg gap-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-sm sm:text-base">{deposit.username || 'Unknown User'}</h3>
+                          <p className="text-xs sm:text-sm text-muted-foreground">
+                            {new Date(deposit.created_at).toLocaleDateString()}
                           </p>
-                          <p className="font-medium text-lg">${deposit.amount.toFixed(2)}</p>
+                          <p className="font-medium text-base sm:text-lg">${deposit.amount.toFixed(2)}</p>
                           {deposit.payment_method && (
-                            <p className="text-sm text-muted-foreground">Method: {deposit.payment_method}</p>
-                          )}
-                          {deposit.payment_details && (
-                            <p className="text-sm text-muted-foreground">
-                              Details: {JSON.stringify(deposit.payment_details)}
-                            </p>
-                          )}
-                          {deposit.description && (
-                            <p className="text-sm text-muted-foreground">{deposit.description}</p>
+                            <p className="text-xs sm:text-sm text-muted-foreground truncate">Method: {deposit.payment_method}</p>
                           )}
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-between sm:justify-end gap-2 flex-wrap">
                           <Badge 
                             variant={
                               deposit.status === 'completed' ? 'default' : 
                               deposit.status === 'rejected' ? 'destructive' : 'secondary'
                             }
+                            className="text-xs"
                           >
                             {deposit.status}
                           </Badge>
@@ -718,6 +712,7 @@ const Admin = () => {
                               <Button
                                 size="sm"
                                 onClick={() => handleDepositAction(deposit.id, deposit.user_id, deposit.amount, 'completed')}
+                                className="text-xs"
                               >
                                 Approve
                               </Button>
@@ -725,6 +720,7 @@ const Admin = () => {
                                 size="sm"
                                 variant="destructive"
                                 onClick={() => handleDepositAction(deposit.id, deposit.user_id, deposit.amount, 'rejected')}
+                                className="text-xs"
                               >
                                 Reject
                               </Button>
@@ -745,23 +741,24 @@ const Admin = () => {
                 <CardTitle>Withdrawal Requests</CardTitle>
                 <CardDescription>Approve or reject user withdrawal requests</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="p-3 sm:p-6">
+                <div className="space-y-3 sm:space-y-4">
                   {withdrawals.map((withdrawal) => (
-                    <div key={withdrawal.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h3 className="font-medium">{withdrawal.username || 'Unknown User'}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Requested: {new Date(withdrawal.created_at).toLocaleDateString()}
+                    <div key={withdrawal.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg gap-3">
+                      <div className="min-w-0">
+                        <h3 className="font-medium text-sm sm:text-base">{withdrawal.username || 'Unknown User'}</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                          {new Date(withdrawal.created_at).toLocaleDateString()}
                         </p>
-                        <p className="font-medium">${withdrawal.amount.toFixed(2)}</p>
+                        <p className="font-medium text-sm sm:text-base">${withdrawal.amount.toFixed(2)}</p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-between sm:justify-end gap-2 flex-wrap">
                         <Badge 
                           variant={
                             withdrawal.status === 'approved' ? 'default' : 
                             withdrawal.status === 'rejected' ? 'destructive' : 'secondary'
                           }
+                          className="text-xs"
                         >
                           {withdrawal.status}
                         </Badge>
@@ -770,6 +767,7 @@ const Admin = () => {
                             <Button
                               size="sm"
                               onClick={() => handleWithdrawalAction(withdrawal.id, withdrawal.user_id, withdrawal.amount, 'approved')}
+                              className="text-xs"
                             >
                               Approve
                             </Button>
@@ -777,6 +775,7 @@ const Admin = () => {
                               size="sm"
                               variant="destructive"
                               onClick={() => handleWithdrawalAction(withdrawal.id, withdrawal.user_id, withdrawal.amount, 'rejected')}
+                              className="text-xs"
                             >
                               Reject
                             </Button>
