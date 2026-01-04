@@ -18,6 +18,10 @@ interface Task {
   url: string;
   reward_amount: number;
   is_active: boolean;
+  image_url?: string | null;
+  description?: string | null;
+  category?: string | null;
+  platform?: string | null;
 }
 
 interface User {
@@ -61,7 +65,15 @@ const Admin = () => {
   const [adminIds, setAdminIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   
-  const [taskForm, setTaskForm] = useState({ title: '', url: '', reward_amount: 0.10 });
+  const [taskForm, setTaskForm] = useState({ 
+    title: '', 
+    url: '', 
+    reward_amount: 0.10,
+    image_url: '',
+    description: '',
+    category: 'general',
+    platform: 'website'
+  });
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskDialog, setShowTaskDialog] = useState(false);
 
@@ -211,7 +223,15 @@ const Admin = () => {
         toast({ title: "Task created successfully!" });
       }
       
-      setTaskForm({ title: '', url: '', reward_amount: 0.10 });
+      setTaskForm({ 
+        title: '', 
+        url: '', 
+        reward_amount: 0.10,
+        image_url: '',
+        description: '',
+        category: 'general',
+        platform: 'website'
+      });
       setEditingTask(null);
       setShowTaskDialog(false);
       fetchData();
@@ -439,11 +459,23 @@ const Admin = () => {
       setTaskForm({
         title: task.title,
         url: task.url,
-        reward_amount: task.reward_amount
+        reward_amount: task.reward_amount,
+        image_url: task.image_url || '',
+        description: task.description || '',
+        category: task.category || 'general',
+        platform: task.platform || 'website'
       });
     } else {
       setEditingTask(null);
-      setTaskForm({ title: '', url: '', reward_amount: 0.10 });
+      setTaskForm({ 
+        title: '', 
+        url: '', 
+        reward_amount: 0.10,
+        image_url: '',
+        description: '',
+        category: 'general',
+        platform: 'website'
+      });
     }
     setShowTaskDialog(true);
   };
@@ -550,7 +582,7 @@ const Admin = () => {
                         {editingTask ? 'Update task details' : 'Create a new task for users'}
                       </DialogDescription>
                     </DialogHeader>
-                    <form onSubmit={handleSaveTask} className="space-y-4">
+                    <form onSubmit={handleSaveTask} className="space-y-4 max-h-[70vh] overflow-y-auto">
                       <div>
                         <Label htmlFor="title">Title</Label>
                         <Input
@@ -561,14 +593,68 @@ const Admin = () => {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="url">URL</Label>
+                        <Label htmlFor="url">Task URL</Label>
                         <Input
                           id="url"
                           type="url"
                           value={taskForm.url}
                           onChange={(e) => setTaskForm({ ...taskForm, url: e.target.value })}
+                          placeholder="https://example.com/task"
                           required
                         />
+                      </div>
+                      <div>
+                        <Label htmlFor="image_url">Image URL</Label>
+                        <Input
+                          id="image_url"
+                          type="url"
+                          value={taskForm.image_url}
+                          onChange={(e) => setTaskForm({ ...taskForm, image_url: e.target.value })}
+                          placeholder="https://example.com/image.jpg"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="description">Description</Label>
+                        <Input
+                          id="description"
+                          value={taskForm.description}
+                          onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })}
+                          placeholder="Task description..."
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label htmlFor="category">Category</Label>
+                          <select
+                            id="category"
+                            value={taskForm.category}
+                            onChange={(e) => setTaskForm({ ...taskForm, category: e.target.value })}
+                            className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+                          >
+                            <option value="general">General</option>
+                            <option value="social">Social</option>
+                            <option value="shopping">Shopping</option>
+                            <option value="survey">Survey</option>
+                            <option value="video">Video</option>
+                          </select>
+                        </div>
+                        <div>
+                          <Label htmlFor="platform">Platform</Label>
+                          <select
+                            id="platform"
+                            value={taskForm.platform}
+                            onChange={(e) => setTaskForm({ ...taskForm, platform: e.target.value })}
+                            className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+                          >
+                            <option value="website">Website</option>
+                            <option value="amazon">Amazon</option>
+                            <option value="alibaba">Alibaba</option>
+                            <option value="ebay">eBay</option>
+                            <option value="youtube">YouTube</option>
+                            <option value="tiktok">TikTok</option>
+                            <option value="instagram">Instagram</option>
+                          </select>
+                        </div>
                       </div>
                       <div>
                         <Label htmlFor="reward">Reward Amount ($)</Label>
