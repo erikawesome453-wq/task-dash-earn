@@ -11,7 +11,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, username: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
-  refreshProfile: () => Promise<void>;
+  refreshProfile: (userOverride?: User | null) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -29,7 +29,7 @@ export const useAuth = () => {
       signUp: async () => ({ error: new Error('Auth not initialized') }),
       signIn: async () => ({ error: new Error('Auth not initialized') }),
       signOut: async () => ({ error: new Error('Auth not initialized') }),
-      refreshProfile: async () => {},
+      refreshProfile: async (_userOverride?: User | null) => {},
     } as const as AuthContextType;
   }
   return context;
@@ -42,8 +42,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const refreshProfile = async () => {
-    if (!user) {
+  const refreshProfile = async (userOverride?: User | null) => {
+    const targetUser = userOverride ?? user;
+
+    if (!targetUser) {
+      setProfile(null);
       setIsAdmin(null);
       return;
     }
@@ -51,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', targetUser.id)
       .maybeSingle();
 
     if (!error && data) {
@@ -61,9 +64,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data: newProfile } = await supabase
         .from('profiles')
         .insert({
-          user_id: user.id,
-          username: user.email?.split('@')[0] || 'user',
-          email: user.email
+          user_id: targetUser.id,
+          username: targetUser.email?.split('@')[0] || 'user',
+          email: targetUser.email,
         })
         .select()
         .single();
@@ -74,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Fetch admin role using RPC to secure against client-side tampering
-    const { data: adminFlag, error: roleError } = await supabase.rpc('is_admin', { user_uuid: user.id });
+    const { data: adminFlag, error: roleError } = await supabase.rpc('is_admin', { user_uuid: targetUser.id });
     if (!roleError) {
       setIsAdmin(Boolean(adminFlag));
     } else {
@@ -85,19 +88,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         if (session?.user) {
+          // Pass the user explicitly to avoid stale-closure issues
           setTimeout(() => {
-            refreshProfile();
+            refreshProfile(session.user);
           }, 0);
         } else {
           setProfile(null);
           setIsAdmin(null);
         }
-        
+
         setLoading(false);
       }
     );
@@ -106,13 +110,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
         setTimeout(() => {
-          refreshProfile();
+          refreshProfile(session.user);
         }, 0);
+      } else {
+        setProfile(null);
+        setIsAdmin(null);
       }
-      
+
       setLoading(false);
     });
 
