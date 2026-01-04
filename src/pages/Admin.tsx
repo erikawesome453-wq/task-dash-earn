@@ -65,30 +65,6 @@ const Admin = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskDialog, setShowTaskDialog] = useState(false);
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-
-  if (isAdmin === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
   const fetchData = async () => {
     try {
       // Fetch tasks
@@ -174,9 +150,43 @@ const Admin = () => {
     }
   };
 
+  // IMPORTANT: useEffect must be called before any conditional returns
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (user && isAdmin) {
+      fetchData();
+    }
+  }, [user, isAdmin]);
+
+  // Now handle conditional rendering AFTER hooks
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/admin-login" replace />;
+  }
+
+  if (isAdmin === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Checking permissions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const handleSaveTask = async (e: React.FormEvent) => {
     e.preventDefault();
