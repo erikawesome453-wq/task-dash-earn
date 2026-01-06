@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2, Users, DollarSign, LogOut } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, DollarSign, LogOut, Upload, X, Image } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -40,6 +40,8 @@ interface Withdrawal {
   created_at: string;
   user_id: string;
   username?: string;
+  payment_method?: string;
+  payment_details?: any;
 }
 
 interface Deposit {
@@ -76,6 +78,9 @@ const Admin = () => {
   });
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskDialog, setShowTaskDialog] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchData = async () => {
     try {
@@ -104,10 +109,11 @@ const Admin = () => {
         setAdminIds(new Set(adminRoles.map(r => r.user_id)));
       }
 
-      // Fetch withdrawals with user info
+      // Fetch withdrawals from wallet_transactions (where users actually submit them)
       const { data: withdrawalsData } = await supabase
-        .from('withdrawals')
+        .from('wallet_transactions')
         .select('*')
+        .eq('transaction_type', 'withdraw')
         .order('created_at', { ascending: false });
       
       if (withdrawalsData) {
@@ -304,10 +310,11 @@ const Admin = () => {
 
   const handleWithdrawalAction = async (withdrawalId: string, userId: string, amount: number, status: 'approved' | 'rejected') => {
     try {
-      // Update withdrawal status
+      // Update withdrawal status in wallet_transactions
+      const newStatus = status === 'approved' ? 'completed' : 'rejected';
       const { error } = await supabase
-        .from('withdrawals')
-        .update({ status })
+        .from('wallet_transactions')
+        .update({ status: newStatus })
         .eq('id', withdrawalId);
       
       if (error) throw error;
@@ -332,19 +339,6 @@ const Admin = () => {
           .eq('user_id', userId);
         
         if (balanceError) throw balanceError;
-
-        // Log the withdrawal transaction
-        const { error: transactionError } = await supabase
-          .from('wallet_transactions')
-          .insert({
-            user_id: userId,
-            transaction_type: 'withdraw',
-            amount: amount,
-            status: 'completed',
-            description: 'Withdrawal approved by admin'
-          });
-
-        if (transactionError) console.error('Transaction log error:', transactionError);
       }
 
       // Send email notification to user
@@ -361,6 +355,68 @@ const Admin = () => {
         description: error.message,
         variant: "destructive"
       });
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload an image smaller than 5MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `tasks/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('task-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('task-images')
+        .getPublicUrl(filePath);
+
+      setTaskForm({ ...taskForm, image_url: publicUrl });
+      setImagePreview(publicUrl);
+      toast({ title: "Image uploaded successfully!" });
+    } catch (error: any) {
+      toast({
+        title: "Upload failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const removeImage = () => {
+    setTaskForm({ ...taskForm, image_url: '' });
+    setImagePreview('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -465,6 +521,7 @@ const Admin = () => {
         category: task.category || 'general',
         platform: task.platform || 'website'
       });
+      setImagePreview(task.image_url || '');
     } else {
       setEditingTask(null);
       setTaskForm({ 
@@ -476,6 +533,7 @@ const Admin = () => {
         category: 'general',
         platform: 'website'
       });
+      setImagePreview('');
     }
     setShowTaskDialog(true);
   };
@@ -604,14 +662,64 @@ const Admin = () => {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="image_url">Image URL</Label>
-                        <Input
-                          id="image_url"
-                          type="url"
-                          value={taskForm.image_url}
-                          onChange={(e) => setTaskForm({ ...taskForm, image_url: e.target.value })}
-                          placeholder="https://example.com/image.jpg"
-                        />
+                        <Label>Task Image</Label>
+                        <div className="space-y-3">
+                          {(imagePreview || taskForm.image_url) ? (
+                            <div className="relative inline-block">
+                              <img 
+                                src={imagePreview || taskForm.image_url} 
+                                alt="Task preview" 
+                                className="w-32 h-32 object-cover rounded-lg border"
+                              />
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="destructive"
+                                className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
+                                onClick={removeImage}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div 
+                              className="w-32 h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors"
+                              onClick={() => fileInputRef.current?.click()}
+                            >
+                              <Image className="h-8 w-8 text-muted-foreground mb-2" />
+                              <span className="text-xs text-muted-foreground">Click to upload</span>
+                            </div>
+                          )}
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => fileInputRef.current?.click()}
+                              disabled={uploadingImage}
+                            >
+                              <Upload className="h-4 w-4 mr-2" />
+                              {uploadingImage ? 'Uploading...' : 'Upload Image'}
+                            </Button>
+                          </div>
+                          <Input
+                            type="url"
+                            value={taskForm.image_url}
+                            onChange={(e) => {
+                              setTaskForm({ ...taskForm, image_url: e.target.value });
+                              setImagePreview(e.target.value);
+                            }}
+                            placeholder="Or paste image URL..."
+                            className="text-sm"
+                          />
+                        </div>
                       </div>
                       <div>
                         <Label htmlFor="description">Description</Label>
@@ -839,47 +947,63 @@ const Admin = () => {
               </CardHeader>
               <CardContent className="p-3 sm:p-6">
                 <div className="space-y-3 sm:space-y-4">
-                  {withdrawals.map((withdrawal) => (
-                    <div key={withdrawal.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg gap-3">
-                      <div className="min-w-0">
-                        <h3 className="font-medium text-sm sm:text-base">{withdrawal.username || 'Unknown User'}</h3>
-                        <p className="text-xs sm:text-sm text-muted-foreground">
-                          {new Date(withdrawal.created_at).toLocaleDateString()}
-                        </p>
-                        <p className="font-medium text-sm sm:text-base">${withdrawal.amount.toFixed(2)}</p>
+                  {withdrawals.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8 text-sm">No withdrawals found</p>
+                  ) : (
+                    withdrawals.map((withdrawal) => (
+                      <div key={withdrawal.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg gap-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-sm sm:text-base">{withdrawal.username || 'Unknown User'}</h3>
+                          <p className="text-xs sm:text-sm text-muted-foreground">
+                            {new Date(withdrawal.created_at).toLocaleDateString()}
+                          </p>
+                          <p className="font-medium text-base sm:text-lg">${withdrawal.amount.toFixed(2)}</p>
+                          {withdrawal.payment_method && (
+                            <p className="text-xs sm:text-sm text-muted-foreground">
+                              Method: {withdrawal.payment_method.replace('_', ' ')}
+                            </p>
+                          )}
+                          {withdrawal.payment_details && (
+                            <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                              Details: {typeof withdrawal.payment_details === 'object' && withdrawal.payment_details.details 
+                                ? withdrawal.payment_details.details 
+                                : JSON.stringify(withdrawal.payment_details)}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between sm:justify-end gap-2 flex-wrap">
+                          <Badge 
+                            variant={
+                              withdrawal.status === 'completed' ? 'default' : 
+                              withdrawal.status === 'rejected' ? 'destructive' : 'secondary'
+                            }
+                            className="text-xs"
+                          >
+                            {withdrawal.status}
+                          </Badge>
+                          {withdrawal.status === 'pending' && (
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => handleWithdrawalAction(withdrawal.id, withdrawal.user_id, withdrawal.amount, 'approved')}
+                                className="text-xs"
+                              >
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleWithdrawalAction(withdrawal.id, withdrawal.user_id, withdrawal.amount, 'rejected')}
+                                className="text-xs"
+                              >
+                                Reject
+                              </Button>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center justify-between sm:justify-end gap-2 flex-wrap">
-                        <Badge 
-                          variant={
-                            withdrawal.status === 'approved' ? 'default' : 
-                            withdrawal.status === 'rejected' ? 'destructive' : 'secondary'
-                          }
-                          className="text-xs"
-                        >
-                          {withdrawal.status}
-                        </Badge>
-                        {withdrawal.status === 'pending' && (
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              onClick={() => handleWithdrawalAction(withdrawal.id, withdrawal.user_id, withdrawal.amount, 'approved')}
-                              className="text-xs"
-                            >
-                              Approve
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleWithdrawalAction(withdrawal.id, withdrawal.user_id, withdrawal.amount, 'rejected')}
-                              className="text-xs"
-                            >
-                              Reject
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
