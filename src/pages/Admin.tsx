@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2, Users, DollarSign, LogOut, Upload, X, Image } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Plus, Edit, Trash2, Users, DollarSign, LogOut, Upload, X, Image, CheckSquare } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -81,6 +82,11 @@ const Admin = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Bulk selection states
+  const [selectedWithdrawals, setSelectedWithdrawals] = useState<Set<string>>(new Set());
+  const [selectedDeposits, setSelectedDeposits] = useState<Set<string>>(new Set());
+  const [bulkProcessing, setBulkProcessing] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -485,6 +491,98 @@ const Admin = () => {
     }
   };
 
+  // Bulk selection helpers
+  const pendingWithdrawals = withdrawals.filter(w => w.status === 'pending');
+  const pendingDeposits = deposits.filter(d => d.status === 'pending');
+
+  const toggleWithdrawalSelection = (id: string) => {
+    const newSelected = new Set(selectedWithdrawals);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedWithdrawals(newSelected);
+  };
+
+  const toggleDepositSelection = (id: string) => {
+    const newSelected = new Set(selectedDeposits);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedDeposits(newSelected);
+  };
+
+  const selectAllWithdrawals = () => {
+    if (selectedWithdrawals.size === pendingWithdrawals.length) {
+      setSelectedWithdrawals(new Set());
+    } else {
+      setSelectedWithdrawals(new Set(pendingWithdrawals.map(w => w.id)));
+    }
+  };
+
+  const selectAllDeposits = () => {
+    if (selectedDeposits.size === pendingDeposits.length) {
+      setSelectedDeposits(new Set());
+    } else {
+      setSelectedDeposits(new Set(pendingDeposits.map(d => d.id)));
+    }
+  };
+
+  const handleBulkWithdrawalAction = async (status: 'approved' | 'rejected') => {
+    if (selectedWithdrawals.size === 0) return;
+    
+    setBulkProcessing(true);
+    try {
+      const selectedItems = withdrawals.filter(w => selectedWithdrawals.has(w.id));
+      
+      for (const withdrawal of selectedItems) {
+        await handleWithdrawalAction(withdrawal.id, withdrawal.user_id, withdrawal.amount, status);
+      }
+      
+      setSelectedWithdrawals(new Set());
+      toast({ 
+        title: `${selectedItems.length} withdrawal(s) ${status} successfully!` 
+      });
+    } catch (error: any) {
+      toast({
+        title: "Bulk action failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
+
+  const handleBulkDepositAction = async (status: 'completed' | 'rejected') => {
+    if (selectedDeposits.size === 0) return;
+    
+    setBulkProcessing(true);
+    try {
+      const selectedItems = deposits.filter(d => selectedDeposits.has(d.id));
+      
+      for (const deposit of selectedItems) {
+        await handleDepositAction(deposit.id, deposit.user_id, deposit.amount, status);
+      }
+      
+      setSelectedDeposits(new Set());
+      toast({ 
+        title: `${selectedItems.length} deposit(s) ${status === 'completed' ? 'approved' : 'rejected'} successfully!` 
+      });
+    } catch (error: any) {
+      toast({
+        title: "Bulk action failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
+
   const handleRoleToggle = async (targetUserId: string, makeAdmin: boolean) => {
     try {
       if (makeAdmin) {
@@ -880,9 +978,45 @@ const Admin = () => {
 
           <TabsContent value="deposits" className="space-y-6">
             <Card>
-              <CardHeader>
-                <CardTitle>Deposit Requests</CardTitle>
-                <CardDescription>Approve or reject user deposit requests</CardDescription>
+              <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <CardTitle>Deposit Requests</CardTitle>
+                  <CardDescription>Approve or reject user deposit requests</CardDescription>
+                </div>
+                {pendingDeposits.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={selectAllDeposits}
+                      className="text-xs"
+                    >
+                      <CheckSquare className="h-3 w-3 mr-1" />
+                      {selectedDeposits.size === pendingDeposits.length ? 'Deselect All' : 'Select All'}
+                    </Button>
+                    {selectedDeposits.size > 0 && (
+                      <>
+                        <Button
+                          size="sm"
+                          onClick={() => handleBulkDepositAction('completed')}
+                          disabled={bulkProcessing}
+                          className="text-xs"
+                        >
+                          Approve ({selectedDeposits.size})
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleBulkDepositAction('rejected')}
+                          disabled={bulkProcessing}
+                          className="text-xs"
+                        >
+                          Reject ({selectedDeposits.size})
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                )}
               </CardHeader>
               <CardContent className="p-3 sm:p-6">
                 <div className="space-y-3 sm:space-y-4">
@@ -891,15 +1025,24 @@ const Admin = () => {
                   ) : (
                     deposits.map((deposit) => (
                       <div key={deposit.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg gap-3">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-sm sm:text-base">{deposit.username || 'Unknown User'}</h3>
-                          <p className="text-xs sm:text-sm text-muted-foreground">
-                            {new Date(deposit.created_at).toLocaleDateString()}
-                          </p>
-                          <p className="font-medium text-base sm:text-lg">${deposit.amount.toFixed(2)}</p>
-                          {deposit.payment_method && (
-                            <p className="text-xs sm:text-sm text-muted-foreground truncate">Method: {deposit.payment_method}</p>
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          {deposit.status === 'pending' && (
+                            <Checkbox
+                              checked={selectedDeposits.has(deposit.id)}
+                              onCheckedChange={() => toggleDepositSelection(deposit.id)}
+                              className="mt-1"
+                            />
                           )}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium text-sm sm:text-base">{deposit.username || 'Unknown User'}</h3>
+                            <p className="text-xs sm:text-sm text-muted-foreground">
+                              {new Date(deposit.created_at).toLocaleDateString()}
+                            </p>
+                            <p className="font-medium text-base sm:text-lg">${deposit.amount.toFixed(2)}</p>
+                            {deposit.payment_method && (
+                              <p className="text-xs sm:text-sm text-muted-foreground truncate">Method: {deposit.payment_method}</p>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center justify-between sm:justify-end gap-2 flex-wrap">
                           <Badge 
@@ -941,9 +1084,45 @@ const Admin = () => {
 
           <TabsContent value="withdrawals" className="space-y-6">
             <Card>
-              <CardHeader>
-                <CardTitle>Withdrawal Requests</CardTitle>
-                <CardDescription>Approve or reject user withdrawal requests</CardDescription>
+              <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <CardTitle>Withdrawal Requests</CardTitle>
+                  <CardDescription>Approve or reject user withdrawal requests</CardDescription>
+                </div>
+                {pendingWithdrawals.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={selectAllWithdrawals}
+                      className="text-xs"
+                    >
+                      <CheckSquare className="h-3 w-3 mr-1" />
+                      {selectedWithdrawals.size === pendingWithdrawals.length ? 'Deselect All' : 'Select All'}
+                    </Button>
+                    {selectedWithdrawals.size > 0 && (
+                      <>
+                        <Button
+                          size="sm"
+                          onClick={() => handleBulkWithdrawalAction('approved')}
+                          disabled={bulkProcessing}
+                          className="text-xs"
+                        >
+                          Approve ({selectedWithdrawals.size})
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleBulkWithdrawalAction('rejected')}
+                          disabled={bulkProcessing}
+                          className="text-xs"
+                        >
+                          Reject ({selectedWithdrawals.size})
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                )}
               </CardHeader>
               <CardContent className="p-3 sm:p-6">
                 <div className="space-y-3 sm:space-y-4">
@@ -952,24 +1131,33 @@ const Admin = () => {
                   ) : (
                     withdrawals.map((withdrawal) => (
                       <div key={withdrawal.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg gap-3">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-sm sm:text-base">{withdrawal.username || 'Unknown User'}</h3>
-                          <p className="text-xs sm:text-sm text-muted-foreground">
-                            {new Date(withdrawal.created_at).toLocaleDateString()}
-                          </p>
-                          <p className="font-medium text-base sm:text-lg">${withdrawal.amount.toFixed(2)}</p>
-                          {withdrawal.payment_method && (
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          {withdrawal.status === 'pending' && (
+                            <Checkbox
+                              checked={selectedWithdrawals.has(withdrawal.id)}
+                              onCheckedChange={() => toggleWithdrawalSelection(withdrawal.id)}
+                              className="mt-1"
+                            />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium text-sm sm:text-base">{withdrawal.username || 'Unknown User'}</h3>
                             <p className="text-xs sm:text-sm text-muted-foreground">
-                              Method: {withdrawal.payment_method.replace('_', ' ')}
+                              {new Date(withdrawal.created_at).toLocaleDateString()}
                             </p>
-                          )}
-                          {withdrawal.payment_details && (
-                            <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                              Details: {typeof withdrawal.payment_details === 'object' && withdrawal.payment_details.details 
-                                ? withdrawal.payment_details.details 
-                                : JSON.stringify(withdrawal.payment_details)}
-                            </p>
-                          )}
+                            <p className="font-medium text-base sm:text-lg">${withdrawal.amount.toFixed(2)}</p>
+                            {withdrawal.payment_method && (
+                              <p className="text-xs sm:text-sm text-muted-foreground">
+                                Method: {withdrawal.payment_method.replace('_', ' ')}
+                              </p>
+                            )}
+                            {withdrawal.payment_details && (
+                              <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                                Details: {typeof withdrawal.payment_details === 'object' && withdrawal.payment_details.details 
+                                  ? withdrawal.payment_details.details 
+                                  : JSON.stringify(withdrawal.payment_details)}
+                              </p>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center justify-between sm:justify-end gap-2 flex-wrap">
                           <Badge 
