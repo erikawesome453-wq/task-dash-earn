@@ -8,10 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Edit, Trash2, Users, DollarSign, LogOut, Upload, X, Image, CheckSquare } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, DollarSign, LogOut, Upload, X, Image, CheckSquare, BarChart3 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import AdminAnalytics from '@/components/AdminAnalytics';
 
 interface Task {
   id: string;
@@ -707,13 +708,22 @@ const Admin = () => {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="tasks" className="space-y-4 sm:space-y-6">
-          <TabsList className="w-full sm:w-auto grid grid-cols-4 sm:flex h-auto">
+        <Tabs defaultValue="analytics" className="space-y-4 sm:space-y-6">
+          <TabsList className="w-full sm:w-auto grid grid-cols-5 sm:flex h-auto">
+            <TabsTrigger value="analytics" className="text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">
+              <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Analytics</span>
+            </TabsTrigger>
             <TabsTrigger value="tasks" className="text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">Tasks</TabsTrigger>
             <TabsTrigger value="users" className="text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">Users</TabsTrigger>
             <TabsTrigger value="deposits" className="text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">Deposits</TabsTrigger>
             <TabsTrigger value="withdrawals" className="text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">Withdraws</TabsTrigger>
           </TabsList>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics">
+            <AdminAnalytics />
+          </TabsContent>
 
           <TabsContent value="tasks" className="space-y-6">
             <Card>
