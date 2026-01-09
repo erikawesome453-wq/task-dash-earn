@@ -19,12 +19,13 @@ import Header from '@/components/Header';
 const VIPPage = () => {
   const { user, profile } = useAuth();
 
+  const currentLevel = profile?.vip_level || 0;
+  const totalActivity = (parseFloat(profile?.total_deposited || '0') + parseFloat(profile?.total_earned || '0'));
+
+  // Redirect check - after all hooks
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
-
-  const currentLevel = profile?.vip_level || 0;
-  const totalActivity = (parseFloat(profile?.total_deposited || '0') + parseFloat(profile?.total_earned || '0'));
 
   const vipLevels = [
     {

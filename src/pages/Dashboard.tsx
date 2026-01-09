@@ -67,11 +67,8 @@ const Dashboard = () => {
   
   const dailyTaskLimit = getDailyTaskLimit(profile?.vip_level || 0);
 
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-
   const fetchData = async () => {
+    if (!user) return;
     try {
       // Fetch available tasks
       const { data: tasksData } = await supabase
@@ -113,6 +110,11 @@ const Dashboard = () => {
       fetchData();
     }
   }, [user]);
+
+  // Redirect check - after all hooks
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
 
   const handleTaskClick = async (task: Task) => {
     if (tasksCompletedToday >= dailyTaskLimit) {
@@ -203,43 +205,8 @@ const Dashboard = () => {
     }
   };
 
-  const handleWithdrawal = async () => {
-    const minWithdraw = 5.00;
-    const currentBalance = parseFloat(profile?.wallet_balance || '0');
-    
-    if (currentBalance < minWithdraw) {
-      toast({
-        title: "Insufficient Balance",
-        description: `Minimum withdrawal amount is $${minWithdraw.toFixed(2)}`,
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('withdrawals')
-        .insert({
-          user_id: user.id,
-          amount: currentBalance
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Withdrawal Request Submitted",
-        description: "Your withdrawal request is pending admin approval."
-      });
-
-      fetchData();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to submit withdrawal request",
-        variant: "destructive"
-      });
-    }
-  };
+  // Note: Withdrawal functionality moved to Wallet page
+  // This function is kept for backwards compatibility but redirects to wallet
 
   if (loading) {
     return (

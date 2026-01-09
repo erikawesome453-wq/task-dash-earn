@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Lock, User, Sparkles, Shield } from 'lucide-react';
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [searchParams] = useSearchParams();
+  const referralCode = searchParams.get('ref');
+  
+  const [isLogin, setIsLogin] = useState(!referralCode); // Default to signup if coming from referral
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
@@ -17,6 +21,16 @@ const Auth = () => {
   
   const { user, isAdmin, loading: authLoading, signIn, signUp } = useAuth();
   const { toast } = useToast();
+
+  // Show referral message if coming from a referral link
+  useEffect(() => {
+    if (referralCode) {
+      toast({
+        title: "Referral Link Detected!",
+        description: "Create an account to get started and support your friend."
+      });
+    }
+  }, [referralCode]);
   
   if (user) {
     // Wait until role loads to decide where to go
@@ -68,6 +82,12 @@ const Auth = () => {
             variant: "destructive"
           });
         } else {
+          // If signup successful and there's a referral code, save it
+          if (referralCode) {
+            // Store referral code in localStorage to process after email confirmation
+            localStorage.setItem('pending_referral_code', referralCode);
+          }
+          
           toast({
             title: "Registration Successful!",
             description: "Please check your email to confirm your account."

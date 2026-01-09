@@ -292,6 +292,10 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { user_uuid: string }; Returns: boolean }
+      update_referrer_stats: {
+        Args: { bonus_amount: number; referrer_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

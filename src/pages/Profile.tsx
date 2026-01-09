@@ -24,10 +24,6 @@ const Profile = () => {
     payment_method: profile?.payment_method || 'mobile_money'
   });
 
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-
   const getVipLabel = (level: number) => {
     switch (level) {
       case 0: return 'Standard';
@@ -39,6 +35,11 @@ const Profile = () => {
       default: return 'Standard';
     }
   };
+
+  // Redirect check - after all hooks
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
 
   const getVipColor = (level: number) => {
     switch (level) {

@@ -35,15 +35,18 @@ const ReferralsPage = () => {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-
   const referralUrl = `${window.location.origin}/auth?ref=${profile?.referral_code}`;
 
   useEffect(() => {
-    fetchReferrals();
+    if (user) {
+      fetchReferrals();
+    }
   }, [user]);
+
+  // Redirect check - after all hooks
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
 
   const fetchReferrals = async () => {
     try {
