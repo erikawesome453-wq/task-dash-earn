@@ -85,6 +85,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Process pending referral after user confirms their email
+  const processPendingReferral = async (userId: string) => {
+    const pendingReferralCode = localStorage.getItem('pending_referral_code');
+    if (!pendingReferralCode) return;
+
+    try {
+      // Find the referrer by their referral code
+      const { data: referrer, error: referrerError } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('referral_code', pendingReferralCode.toUpperCase())
+        .single();
+
+      if (referrerError || !referrer || referrer.user_id === userId) {
+        // Invalid code, self-referral, or referrer not found - clean up
+        localStorage.removeItem('pending_referral_code');
+        return;
+      }
+
+      // Update the new user's profile with the referral code
+      await supabase
+        .from('profiles')
+        .update({ referred_by_code: pendingReferralCode.toUpperCase() })
+        .eq('user_id', userId);
+
+      // Create referral record
+      const { error: referralError } = await supabase
+        .from('referrals')
+        .insert({
+          referrer_id: referrer.user_id,
+          referred_id: userId,
+          bonus_earned: 1.00
+        });
+
+      if (!referralError) {
+        // Update referrer's stats
+        await supabase.rpc('update_referrer_stats', { 
+          referrer_user_id: referrer.user_id,
+          bonus_amount: 1.00
+        });
+      }
+
+      // Clean up
+      localStorage.removeItem('pending_referral_code');
+    } catch (error) {
+      console.error('Error processing referral:', error);
+      localStorage.removeItem('pending_referral_code');
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -96,6 +146,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Pass the user explicitly to avoid stale-closure issues
           setTimeout(() => {
             refreshProfile(session.user);
+            // Process any pending referral
+            processPendingReferral(session.user.id);
           }, 0);
         } else {
           setProfile(null);
@@ -114,6 +166,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (session?.user) {
         setTimeout(() => {
           refreshProfile(session.user);
+          // Process any pending referral
+          processPendingReferral(session.user.id);
         }, 0);
       } else {
         setProfile(null);

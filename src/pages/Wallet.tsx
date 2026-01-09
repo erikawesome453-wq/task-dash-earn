@@ -56,12 +56,9 @@ const WalletPage = () => {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-
   // Set up real-time subscription for profile updates (balance changes)
   useEffect(() => {
+    if (!user) return;
     if (!user) return;
 
     const profileChannel = supabase
@@ -111,10 +108,13 @@ const WalletPage = () => {
   }, [user]);
 
   useEffect(() => {
-    fetchTransactions();
+    if (user) {
+      fetchTransactions();
+    }
   }, [user]);
 
   const fetchTransactions = async () => {
+    if (!user) return;
     try {
       const { data, error } = await supabase
         .from('wallet_transactions')
@@ -135,6 +135,11 @@ const WalletPage = () => {
       setLoading(false);
     }
   };
+
+  // Redirect check - after all hooks
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
 
   const handleDeposit = async () => {
     if (!depositAmount || parseFloat(depositAmount) <= 0) {
@@ -276,6 +281,7 @@ const WalletPage = () => {
     switch (type) {
       case 'deposit': return <TrendingUp className="h-4 w-4 text-green-500" />;
       case 'withdraw': return <TrendingDown className="h-4 w-4 text-red-500" />;
+      case 'earning': 
       case 'task_reward': return <CheckCircle className="h-4 w-4 text-blue-500" />;
       case 'referral_bonus': return <Plus className="h-4 w-4 text-purple-500" />;
       default: return <Wallet className="h-4 w-4" />;
